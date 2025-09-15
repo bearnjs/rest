@@ -48,3 +48,5 @@ out/
 *.swn
 .DS_Store
 Thumbs.db
+
+*.tgz

@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "tsconfig": "./tsconfig.json",
+  "name": "blaze-http",
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeInternal": true
+}
