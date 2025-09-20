@@ -1,62 +1,101 @@
-import { Handler, ControllerClass } from './types';
+import type { ControllerClass, RouteDefinition, RouteSchema, HttpMethod } from './types.js';
 
-import type { RouteDefinition, RouteSchema } from './types';
-
+/** @internal */
 interface ControllerRegistryItem {
   basePath: string;
-  instance: any;
+  instance: object;
   routes: RouteDefinition[];
 }
 
 const controllers: ControllerRegistryItem[] = [];
-const controllerMeta = new WeakMap<Function, { basePath: string }>();
-const routesMeta = new WeakMap<Function, RouteDefinition[]>();
-const controllerCtors: Function[] = [];
+const controllerMeta = new WeakMap<ControllerClass, { basePath: string }>();
+const routesMeta = new WeakMap<ControllerClass, RouteDefinition[]>();
+const controllerCtors: ControllerClass[] = [];
 
+/**
+ * Decorator to mark a class as a controller and set a base path.
+ * @param basePath @type {string} - The base path for the controller.
+ * @returns @type {ClassDecorator} - The decorator for the controller.
+ */
 export function Controller(basePath: string = ''): ClassDecorator {
-  return (target) => {
-    controllerMeta.set(target, { basePath });
-    controllerCtors.push(target);
+  return target => {
+    controllerMeta.set(target as unknown as ControllerClass, { basePath });
+    controllerCtors.push(target as unknown as ControllerClass);
   };
 }
 
+/** @internal */
 type RouteOptions = string | { path?: string; schema?: RouteSchema };
-function createMethodDecorator(method: string) {
+/**
+ * Creates a method decorator for a given HTTP method.
+ * @param method @type {HttpMethod} - The HTTP method to create a decorator for.
+ * @returns @type {MethodDecorator} - The decorator for the HTTP method.
+ */
+function createMethodDecorator(method: HttpMethod) {
   return function (options: RouteOptions = ''): MethodDecorator {
     return (target, propertyKey) => {
-      const path = typeof options === 'string' ? options : options.path || '';
+      const path = typeof options === 'string' ? options : (options.path ?? '');
       const schema = typeof options === 'string' ? undefined : options.schema;
-      const ctor = target.constructor as Function;
-      const existing = routesMeta.get(ctor) || [];
+      const ctor = target.constructor as ControllerClass;
+      const existing = routesMeta.get(ctor) ?? [];
       existing.push({
         method,
         path,
         propertyKey: propertyKey as string,
-        schema: schema as RouteSchema,
+        ...(schema ? { schema } : {}),
       });
       routesMeta.set(ctor, existing);
     };
   };
 }
-
+/** Decorator for GET requests.
+ * @param options @type {RouteOptions} - The options for the GET request.
+ * @returns @type {MethodDecorator} - The decorator for the GET request.
+ */
 export const Get = createMethodDecorator('GET');
+/** Decorator for POST requests.
+ * @param options @type {RouteOptions} - The options for the POST request.
+ * @returns @type {MethodDecorator} - The decorator for the POST request.
+ */
 export const Post = createMethodDecorator('POST');
+/** Decorator for PUT requests.
+ * @param options @type {RouteOptions} - The options for the PUT request.
+ * @returns @type {MethodDecorator} - The decorator for the PUT request.
+ */
 export const Put = createMethodDecorator('PUT');
+/** Decorator for PATCH requests.
+ * @param options @type {RouteOptions} - The options for the PATCH request.
+ * @returns @type {MethodDecorator} - The decorator for the PATCH request.
+ */
 export const Patch = createMethodDecorator('PATCH');
+/** Decorator for DELETE requests.
+ * @param options @type {RouteOptions} - The options for the DELETE request.
+ * @returns @type {MethodDecorator} - The decorator for the DELETE request.
+ */
 export const Delete = createMethodDecorator('DELETE');
-export function Custom(method: string) {
+
+/** Decorator factory for custom HTTP methods.
+ * @param method @type {HttpMethod} - The HTTP method to create a decorator for.
+ * @returns @type {MethodDecorator} - The decorator for the custom HTTP method.
+ */
+export function Custom(method: HttpMethod) {
   return createMethodDecorator(method);
 }
 
-export function getRegisteredControllers() {
+/**
+ * Returns the list of controllers materialized from decorator metadata.
+ * This is built only once and cached.
+ * @returns @type {ControllerRegistryItem[]} - The list of controllers.
+ */
+export function getRegisteredControllers(): ControllerRegistryItem[] {
   // Build registry once
   if (controllers.length > 0) return controllers;
 
   // materialize from metadata maps
   for (const ctor of controllerCtors) {
-    const meta = controllerMeta.get(ctor) || { basePath: '' };
-    const instance = new (ctor as any)();
-    const routes = routesMeta.get(ctor) || [];
+    const meta = controllerMeta.get(ctor) ?? { basePath: '' };
+    const instance = new ctor();
+    const routes = routesMeta.get(ctor) ?? [];
     controllers.push({ basePath: meta.basePath || '', instance, routes });
   }
   return controllers;
