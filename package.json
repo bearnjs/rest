@@ -1,6 +1,6 @@
 {
   "name": "blaze-http",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A blazing fast HTTP framework built from scratch in TypeScript",
   "keywords": [
     "http",
@@ -20,13 +20,17 @@
   "author": "himonshuuu",
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "build:tsc": "tsc",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docs": "typedoc"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -50,6 +54,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
+    "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.43.0"
   },

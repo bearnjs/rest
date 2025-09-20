@@ -50,3 +50,5 @@ out/
 Thumbs.db
 
 *.tgz
+
+benchmark/
