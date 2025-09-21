@@ -91,12 +91,16 @@ export function getRegisteredControllers(): ControllerRegistryItem[] {
   // Build registry once
   if (controllers.length > 0) return controllers;
 
-  // materialize from metadata maps
-  for (const ctor of controllerCtors) {
+  // materialize from metadata maps - optimized
+  const length = controllerCtors.length;
+  for (let i = 0; i < length; i++) {
+    const ctor = controllerCtors[i];
+    if (!ctor) continue;
+
     const meta = controllerMeta.get(ctor) ?? { basePath: '' };
     const instance = new ctor();
     const routes = routesMeta.get(ctor) ?? [];
-    controllers.push({ basePath: meta.basePath || '', instance, routes });
+    controllers.push({ basePath: meta.basePath, instance, routes });
   }
   return controllers;
 }
