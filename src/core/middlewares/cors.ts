@@ -1,4 +1,4 @@
-import type { Handler, CorsOptions } from '../types';
+import type { Handler, CorsOptions } from '../../types';
 
 /**
  * Creates a CORS middleware using the provided options.
@@ -8,6 +8,15 @@ import type { Handler, CorsOptions } from '../types';
  */
 export function createCorsMiddleware(options: CorsOptions): Handler {
   const cors = options;
+
+  const staticHeaders: Record<string, string> = {};
+  if (cors.methods) staticHeaders['Access-Control-Allow-Methods'] = cors.methods.join(',');
+  if (cors.headers) staticHeaders['Access-Control-Allow-Headers'] = cors.headers.join(',');
+  if (cors.exposeHeaders) staticHeaders['Access-Control-Expose-Headers'] = cors.exposeHeaders.join(',');
+  if (cors.credentials) staticHeaders['Access-Control-Allow-Credentials'] = 'true';
+  if (typeof cors.maxAgeSeconds === 'number') {
+    staticHeaders['Access-Control-Max-Age'] = String(Math.max(0, Math.floor(cors.maxAgeSeconds)));
+  }
 
   return (req, res, next) => {
     const origin = req.headers['origin'];
@@ -26,12 +35,11 @@ export function createCorsMiddleware(options: CorsOptions): Handler {
     }
 
     res.setHeader('Access-Control-Allow-Origin', allowOrigin);
-    if (cors.methods) res.setHeader('Access-Control-Allow-Methods', cors.methods.join(','));
-    if (cors.headers) res.setHeader('Access-Control-Allow-Headers', cors.headers.join(','));
-    if (cors.exposeHeaders) res.setHeader('Access-Control-Expose-Headers', cors.exposeHeaders.join(','));
-    if (cors.credentials) res.setHeader('Access-Control-Allow-Credentials', 'true');
-    if (typeof cors.maxAgeSeconds === 'number')
-      res.setHeader('Access-Control-Max-Age', String(Math.max(0, Math.floor(cors.maxAgeSeconds))));
+
+    for (const [key, value] of Object.entries(staticHeaders)) {
+      res.setHeader(key, value);
+    }
+
     if (allowOrigin !== '*') res.setHeader('Vary', 'Origin');
 
     if (req.method === 'OPTIONS') {

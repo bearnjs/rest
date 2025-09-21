@@ -1,17 +1,17 @@
-import type { BlazeRequest, HttpMethod, JsonValue } from '../types';
+import type { AerixRequest, HttpMethod, JsonValue } from '../types';
 import type { IncomingMessage } from 'http';
 
-/** Enhances a Node IncomingMessage with Blaze conveniences.
+/** Enhances a Node IncomingMessage with Aerix conveniences.
  * @param req @type {IncomingMessage} - The incoming message to enhance.
- * @returns @type {BlazeRequest} - The enhanced incoming message.
+ * @returns @type {AerixRequest} - The enhanced incoming message.
  */
-export function enhanceRequest(req: IncomingMessage): BlazeRequest {
-  const blazeReq = req as BlazeRequest;
+export function enhanceRequest(req: IncomingMessage): AerixRequest {
+  const AerixReq = req as AerixRequest;
 
-  // Header accessors
-  function getHeader(this: BlazeRequest, name: 'set-cookie'): string[] | undefined;
-  function getHeader(this: BlazeRequest, name: string): string | undefined;
-  function getHeader(this: BlazeRequest, name: string): string | string[] | undefined {
+  // Header accessors - optimized
+  function getHeader(this: AerixRequest, name: 'set-cookie'): string[] | undefined;
+  function getHeader(this: AerixRequest, name: string): string | undefined;
+  function getHeader(this: AerixRequest, name: string): string | string[] | undefined {
     const key = name.toLowerCase();
     if (key === 'set-cookie') {
       const val = this.headers['set-cookie'];
@@ -21,25 +21,26 @@ export function enhanceRequest(req: IncomingMessage): BlazeRequest {
     if (Array.isArray(value)) return value.join(', ');
     return typeof value === 'string' ? value : undefined;
   }
-  blazeReq.get = getHeader;
-  blazeReq.header = getHeader;
+
+  AerixReq.get = getHeader;
+  AerixReq.header = getHeader;
 
   // URL properties
   if (typeof req.url === 'string') {
-    blazeReq.originalUrl = req.url;
-    blazeReq.path = req.url.split('?')[0] ?? '';
+    AerixReq.originalUrl = req.url;
+    AerixReq.path = req.url.split('?')[0] ?? '';
   }
 
   // Protocol & security
-  blazeReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
-  blazeReq.secure = blazeReq.protocol === 'https';
+  AerixReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
+  AerixReq.secure = AerixReq.protocol === 'https';
 
   // IP addresses
   if (typeof req.socket.remoteAddress === 'string') {
-    blazeReq.ip = req.socket.remoteAddress;
+    AerixReq.ip = req.socket.remoteAddress;
   }
   const forwardedFor = req.headers['x-forwarded-for'];
-  blazeReq.ips = Array.isArray(forwardedFor)
+  AerixReq.ips = Array.isArray(forwardedFor)
     ? forwardedFor.flatMap(s => s.split(',').map(ip => ip.trim()))
     : typeof forwardedFor === 'string'
       ? forwardedFor.split(',').map(ip => ip.trim())
@@ -54,25 +55,25 @@ export function enhanceRequest(req: IncomingMessage): BlazeRequest {
       : [];
   if (hostValues.length > 0) {
     const firstValue = hostValues[0] as string;
-    blazeReq.hostname = firstValue.split(':')[0] ?? '';
-    blazeReq.host = firstValue;
+    AerixReq.hostname = firstValue.split(':')[0] ?? '';
+    AerixReq.host = firstValue;
     const portMatch = firstValue.match(/:(\d+)/) ?? [];
-    blazeReq.port = parseInt(portMatch[1] ?? '0', 10);
+    AerixReq.port = parseInt(portMatch[1] ?? '0', 10);
   }
 
   // Request properties
-  blazeReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
-  blazeReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
-  blazeReq.stale = true;
-  blazeReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
-  blazeReq.subdomains = blazeReq.hostname ? blazeReq.hostname.split('.').slice(0, -2) : [];
+  AerixReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
+  AerixReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
+  AerixReq.stale = true;
+  AerixReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
+  AerixReq.subdomains = AerixReq.hostname ? AerixReq.hostname.split('.').slice(0, -2) : [];
 
-  // Accept headers parsing (cached)
+  // Accept headers parsing (cached and optimized)
   const acceptsHeaderRaw = Array.isArray(req.headers.accept)
     ? req.headers.accept.join(',')
     : (req.headers.accept ?? '');
   const acceptsList = acceptsHeaderRaw ? acceptsHeaderRaw.split(',').map(t => t.trim()) : [];
-  blazeReq.accepts = function (): string[] {
+  AerixReq.accepts = function (): string[] {
     return acceptsList;
   };
 
@@ -80,7 +81,7 @@ export function enhanceRequest(req: IncomingMessage): BlazeRequest {
     ? req.headers['accept-charset'][0]
     : req.headers['accept-charset'];
   const acceptsCharsetList = acceptsCharsetRaw ? acceptsCharsetRaw.split(',').map(c => c.trim()) : [];
-  blazeReq.acceptsCharsets = function (): string[] {
+  AerixReq.acceptsCharsets = function (): string[] {
     return acceptsCharsetList;
   };
 
@@ -88,7 +89,7 @@ export function enhanceRequest(req: IncomingMessage): BlazeRequest {
     ? req.headers['accept-encoding'].join(',')
     : (req.headers['accept-encoding'] ?? '');
   const acceptsEncodingList = acceptsEncodingRaw ? acceptsEncodingRaw.split(',').map(e => e.trim()) : [];
-  blazeReq.acceptsEncodings = function (): string[] {
+  AerixReq.acceptsEncodings = function (): string[] {
     return acceptsEncodingList;
   };
 
@@ -96,20 +97,19 @@ export function enhanceRequest(req: IncomingMessage): BlazeRequest {
     ? req.headers['accept-language'].join(',')
     : (req.headers['accept-language'] ?? '');
   const acceptsLanguageList = acceptsLanguageRaw ? acceptsLanguageRaw.split(',').map(l => l.trim()) : [];
-  blazeReq.acceptsLanguages = function (): string[] {
+  AerixReq.acceptsLanguages = function (): string[] {
     return acceptsLanguageList;
   };
 
-  return blazeReq;
+  return AerixReq;
 }
 
 /** Parses request body based on Content-Type with simple safeguards.
- * @param req @type {BlazeRequest} - The request to parse the body of.
+ * @param req @type {AerixRequest} - The request to parse the body of.
  * @returns @type {Promise<void>} - A promise that resolves when the body is parsed.
  */
-export async function parseBody(req: BlazeRequest): Promise<void> {
+export async function parseBody(req: AerixRequest): Promise<void> {
   return new Promise((resolve, reject) => {
-    let body = '';
     const contentLength = parseInt(req.headers['content-length'] ?? '0', 10);
 
     if (contentLength > 1024 * 1024) {
@@ -117,21 +117,29 @@ export async function parseBody(req: BlazeRequest): Promise<void> {
       return;
     }
 
-    req.on('data', (chunk: Buffer) => {
-      body += chunk.toString();
+    // Use Buffer for better performance than string concatenation
+    const chunks: Buffer[] = [];
+    let totalLength = 0;
 
-      if (body.length > 1024 * 1024) {
+    req.on('data', (chunk: Buffer) => {
+      totalLength += chunk.length;
+
+      if (totalLength > 1024 * 1024) {
         reject(new Error('Request entity too large'));
         req.destroy();
+        return;
       }
+
+      chunks.push(chunk);
     });
 
     req.on('end', () => {
       try {
+        const body = Buffer.concat(chunks).toString();
         const contentType = req.headers['content-type'];
 
         if (contentType?.includes('application/json')) {
-          req.body = JSON.parse(body || '{}') as JsonValue;
+          req.body = body ? (JSON.parse(body) as JsonValue) : {};
         } else if (contentType?.includes('application/x-www-form-urlencoded')) {
           req.body = parseUrlEncoded(body);
         } else if (contentType?.includes('multipart/form-data')) {
@@ -153,11 +161,21 @@ export async function parseBody(req: BlazeRequest): Promise<void> {
 function parseUrlEncoded(body: string): Record<string, string> {
   const params: Record<string, string> = {};
   if (!body) return params;
-  body.split('&').forEach(param => {
-    const [key, value] = param.split('=');
-    if (key) {
-      params[decodeURIComponent(key)] = decodeURIComponent(value ?? '');
+
+  const parts = body.split('&');
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+
+    const equalIndex = part.indexOf('=');
+    if (equalIndex === -1) {
+      params[decodeURIComponent(part)] = '';
+    } else {
+      const key = part.slice(0, equalIndex);
+      const value = part.slice(equalIndex + 1);
+      if (key) params[decodeURIComponent(key)] = decodeURIComponent(value);
     }
-  });
+  }
+
   return params;
 }
