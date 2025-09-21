@@ -1,36 +1,33 @@
 {
-  "name": "blaze-http",
-  "version": "0.1.0",
-  "description": "A blazing fast HTTP framework built from scratch in TypeScript",
+  "name": "@aerix/rest",
+  "version": "0.1.1",
+  "description": "A fast and lightweight HTTP framework built from scratch in TypeScript",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "author": "himonshuuu",
+  "license": "MIT",
   "keywords": [
     "http",
     "api",
     "framework",
     "typescript"
   ],
-  "homepage": "https://github.com/himonshuuu/blaze-http#readme",
-  "bugs": {
-    "url": "https://github.com/himonshuuu/blaze-http/issues"
-  },
+  "homepage": "https://github.com/himonshuuu/aerix-rest#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/himonshuuu/blaze-http.git"
+    "url": "git+https://github.com/himonshuuu/aerix-rest.git"
   },
-  "license": "MIT",
-  "author": "himonshuuu",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsup",
-    "build:watch": "tsup --watch",
-    "build:tsc": "tsc",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --check .",
-    "format:write": "prettier --write .",
-    "prepare": "husky",
-    "docs": "typedoc"
+  "bugs": {
+    "url": "https://github.com/himonshuuu/aerix-rest/issues"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -39,6 +36,17 @@
     "dist",
     "README.md"
   ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "build:tsc": "tsc",
+    "docs": "typedoc",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky"
+  },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@types/node": "^24.4.0",
