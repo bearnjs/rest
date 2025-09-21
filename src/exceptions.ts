@@ -45,6 +45,51 @@ export class NotFoundException extends HttpException {
     super(404, message, payload);
   }
 }
+/** Method Not Allowed exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class MethodNotAllowedException extends HttpException {
+  constructor(message = 'Method Not Allowed', payload?: unknown) {
+    super(405, message, payload);
+  }
+}
+/** Not Acceptable exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class NotAcceptableException extends HttpException {
+  constructor(message = 'Not Acceptable', payload?: unknown) {
+    super(406, message, payload);
+  }
+}
+/** Conflict exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class ConflictException extends HttpException {
+  constructor(message = 'Conflict', payload?: unknown) {
+    super(409, message, payload);
+  }
+}
+/** Gone exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class GoneException extends HttpException {
+  constructor(message = 'Gone', payload?: unknown) {
+    super(410, message, payload);
+  }
+}
+/** Unprocessable Entity exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class UnprocessableEntityException extends HttpException {
+  constructor(message = 'Unprocessable Entity', payload?: unknown) {
+    super(422, message, payload);
+  }
+}
 /** Internal Server Error exception.
  * @param message @type {string} - The message of the exception.
  * @param payload @type {unknown} - The payload of the exception.
@@ -52,5 +97,32 @@ export class NotFoundException extends HttpException {
 export class InternalServerErrorException extends HttpException {
   constructor(message = 'Internal Server Error', payload?: unknown) {
     super(500, message, payload);
+  }
+}
+/** Bad Gateway exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class BadGatewayException extends HttpException {
+  constructor(message = 'Bad Gateway', payload?: unknown) {
+    super(502, message, payload);
+  }
+}
+/** Service Unavailable exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class ServiceUnavailableException extends HttpException {
+  constructor(message = 'Service Unavailable', payload?: unknown) {
+    super(503, message, payload);
+  }
+}
+/** Gateway Timeout exception.
+ * @param message @type {string} - The message of the exception.
+ * @param payload @type {unknown} - The payload of the exception.
+ */
+export class GatewayTimeoutException extends HttpException {
+  constructor(message = 'Gateway Timeout', payload?: unknown) {
+    super(504, message, payload);
   }
 }
