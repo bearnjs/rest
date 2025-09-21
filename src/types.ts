@@ -43,9 +43,9 @@ export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue
 /**
  * Augmented Node IncomingMessage with framework conveniences.
  * Extends the base Node IncomingMessage with additional properties and methods.
- * @returns BlazeRequest
+ * @returns AerixRequest
  */
-export interface BlazeRequest extends IncomingMessage {
+export interface AerixRequest extends IncomingMessage {
   /** URL parameters parsed from route pattern
    * @returns URL parameters parsed from route pattern
    */
@@ -180,79 +180,79 @@ export interface BlazeRequest extends IncomingMessage {
 /**
  * Augmented Node ServerResponse with Express-like helpers.
  * Extends the base Node ServerResponse with additional methods.
- * @returns BlazeResponse
+ * @returns AerixResponse
  */
-export interface BlazeResponse extends ServerResponse {
+export interface AerixResponse extends ServerResponse {
   /**
    * Send a JSON response
    * @param data Data to send as JSON
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  json(data: JsonValue): BlazeResponse;
+  json(data: JsonValue): AerixResponse;
 
   /**
    * Send a response
    * @param data Data to send
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  send(data: string | Buffer): BlazeResponse;
+  send(data: string | Buffer): AerixResponse;
 
   /**
    * Set response status code
    * @param code HTTP status code
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  status(code: number): BlazeResponse;
+  status(code: number): AerixResponse;
 
   /**
    * Send status code as response
    * @param code HTTP status code
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  sendStatus(code: number): BlazeResponse;
+  sendStatus(code: number): AerixResponse;
 
   /**
    * Set Content-Type header
    * @param type MIME type
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  type(type: string): BlazeResponse;
+  type(type: string): AerixResponse;
 
   /**
    * Set Content-Type header
    * @param type MIME type
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  contentType(type: string): BlazeResponse;
+  contentType(type: string): AerixResponse;
 
   /**
    * Redirect to URL
    * @param url Redirect target URL
    * @param status HTTP status code
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  redirect(url: string, status?: number): BlazeResponse;
+  redirect(url: string, status?: number): AerixResponse;
 
   /**
    * Set response header
    * @param field Header name or object
    * @param value Header value
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  set(field: string | Record<string, string | string[]>, value?: string | string[]): BlazeResponse;
+  set(field: string | Record<string, string | string[]>, value?: string | string[]): AerixResponse;
 
   /**
    * Set response header (alias for set())
    * @param field Header name or object
    * @param value Header value
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  header(field: string | Record<string, string | string[]>, value?: string | string[]): BlazeResponse;
+  header(field: string | Record<string, string | string[]>, value?: string | string[]): AerixResponse;
 
   /**
    * Get response header
    * @param field Header name
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
   get(field: string): string | undefined;
 
@@ -260,54 +260,54 @@ export interface BlazeResponse extends ServerResponse {
    * Append to response header
    * @param field Header name
    * @param value Value to append
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  append(field: string, value?: string[] | string): BlazeResponse;
+  append(field: string, value?: string[] | string): AerixResponse;
 
   /**
    * Set Link headers
    * @param links Object of link relations
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  links(links: Record<string, string>): BlazeResponse;
+  links(links: Record<string, string>): AerixResponse;
 
   /**
    * Set Location header
    * @param url URL to set in Location header
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  location(url: string): BlazeResponse;
+  location(url: string): AerixResponse;
 
   /**
    * Add field to Vary header
    * @param field Header to vary on
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  vary(field: string): BlazeResponse;
+  vary(field: string): AerixResponse;
 
   /**
    * Send JSONP response
    * @param data Data to send as JSONP
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  jsonp(data: JsonValue): BlazeResponse;
+  jsonp(data: JsonValue): AerixResponse;
 
   /**
    * Set cookie
    * @param name Cookie name
    * @param value Cookie value
    * @param options Cookie options
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  cookie(name: string, value: string, options?: CookieOptions): BlazeResponse;
+  cookie(name: string, value: string, options?: CookieOptions): AerixResponse;
 
   /**
    * Clear cookie
    * @param name Cookie name
    * @param options Cookie options
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  clearCookie(name: string, options?: CookieOptions): BlazeResponse;
+  clearCookie(name: string, options?: CookieOptions): AerixResponse;
 }
 
 /**
@@ -324,7 +324,7 @@ export type NextFunction = (err?: Error) => void;
  * @param next Next function
  * @returns Handler
  */
-export type Handler = (req: BlazeRequest, res: BlazeResponse, next: NextFunction) => void | Promise<void>;
+export type Handler = (req: AerixRequest, res: AerixResponse, next: NextFunction) => void | Promise<void>;
 
 /**
  * Global error handler signature.
@@ -334,7 +334,7 @@ export type Handler = (req: BlazeRequest, res: BlazeResponse, next: NextFunction
  * @param next Next function
  * @returns ErrorHandler
  */
-export type ErrorHandler = (err: Error, req: BlazeRequest, res: BlazeResponse, next: NextFunction) => void;
+export type ErrorHandler = (err: Error, req: AerixRequest, res: AerixResponse, next: NextFunction) => void;
 
 /** HTTP method type */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
@@ -411,42 +411,42 @@ export interface ListenInfo {
   pid: number;
 }
 
-/** Network binding preference */
-/**
- * Network binding preference
- * @enum {string}
- * @returns Network binding preference
- */
-export enum NetworkType {
-  ipv4 = 'ipv4',
-  ipv6 = 'ipv6',
-  both = 'both',
-}
-
 /** Options controlling server listen behavior and startup logging */
 /**
  * Options controlling server listen behavior and startup logging
- * @returns @type {ListenOptions}
+ * @returns @type {AppOptions}
  */
-export interface ListenOptions {
+export interface AppOptions {
+  /**
+   * The name of the application.
+   * @returns The name of the application.
+   */
+  appName?: string;
+  /**
+   * The version of the application.
+   * @returns The version of the application.
+   */
+  appVersion?: string;
+  /**
+   * The description of the application.
+   * @returns The description of the application.
+   */
+  appDescription?: string;
+  /**
+   * The host to listen on.
+   * @returns The host to listen on.
+   */
+  host?: string;
   /**
    * The port to listen on.
    * @returns The port to listen on.
    */
   port?: number;
-  /** Host to bind to
-   * @returns Host to bind to
-   */
-  host?: string;
   /**
    * Whether to disable startup logging.
    * @returns Whether to disable startup logging.
    */
   disableLogging?: boolean;
-  /** IP version(s) to use
-   * @returns IP version(s) to use
-   */
-  networkType?: NetworkType;
   /**
    * Whether to print route table on startup.
    * @returns Whether to print route table on startup.
@@ -461,12 +461,6 @@ export interface ListenOptions {
    * @returns The listen backlog size.
    */
   backlog?: number;
-  /**
-   * The custom logging function.
-   * @param message The message to log.
-   * @returns The custom logging function.
-   */
-  logFn?: (message: string) => void;
 }
 
 /** CORS configuration passed to the CORS middleware */
@@ -512,7 +506,7 @@ export interface CorsOptions {
  * Top-level application options
  * @returns @type {AppOptions}
  */
-export interface AppOptions extends ListenOptions {
+export interface AppOptions {
   /**
    * The CORS configuration.
    * @returns The CORS configuration.
@@ -612,7 +606,7 @@ export type TypedRequest<
   TParams extends Record<string, string> = Record<string, string>,
   TQuery extends Record<string, string> = Record<string, string>,
   TBody extends JsonValue = JsonValue,
-> = Omit<BlazeRequest, 'params' | 'query' | 'body' | 'method'> & {
+> = Omit<AerixRequest, 'params' | 'query' | 'body' | 'method'> & {
   /**
    * Typed URL parameters
    * @returns The typed URL parameters.
@@ -639,13 +633,13 @@ export type TypedRequest<
  * Strongly-typed response convenience for route authors
  * @returns @type {TypedResponse}
  */
-export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<BlazeResponse, 'json'> & {
+export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<AerixResponse, 'json'> & {
   /**
    * Send typed JSON response
    * @param data Response data
-   * @returns BlazeResponse
+   * @returns AerixResponse
    */
-  json(data: TResponse): BlazeResponse;
+  json(data: TResponse): AerixResponse;
 };
 
 /**
