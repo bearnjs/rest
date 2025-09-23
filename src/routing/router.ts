@@ -1,12 +1,30 @@
-import type { AerixRequest, AerixResponse, Handler, HttpMethod, Route, NextFunction, RouteSchema } from '../types';
+import type {
+  Request,
+  Response,
+  Handler,
+  HttpMethod,
+  Route,
+  NextFunction,
+  RouteSchema,
+  PathHandler,
+  JsonValue,
+} from '../types';
 
 /** Lightweight HTTP router with middleware support. */
 export class Router {
   private routes: Route[] = [];
-  private middleware: Array<{ path?: string; handler: Handler }> = [];
+  private middlewares: Array<{ path?: string; handler: Handler }> = [];
   private mountedRouters: Array<{ path?: string; router: Router }> = [];
   private routeMap = new Map<string, Route[]>();
   private middlewareCache = new Map<string, Handler[]>();
+
+  /** Normalize a path by ensuring leading slash and removing trailing slash (except root) */
+  private normalizePath(input: string): string {
+    const raw = input || '/';
+    let path = raw.startsWith('/') ? raw : `/${raw}`;
+    if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+    return path;
+  }
 
   /** Registers a middleware for all paths or a specific path prefix.
    * @param handler @type {Handler} - The middleware handler.
@@ -19,34 +37,65 @@ export class Router {
   use(router: Router): void;
   use(pathOrHandler: string | Handler | Router, handler?: Handler | Router): void {
     if (typeof pathOrHandler === 'string' && handler) {
+      const normalized = this.normalizePath(pathOrHandler);
       if (handler instanceof Router) {
-        this.mountedRouters.push({ path: pathOrHandler, router: handler });
+        this.mountedRouters.push({ path: normalized, router: handler });
       } else {
-        this.middleware.push({ path: pathOrHandler, handler });
+        this.middlewares.push({ path: normalized, handler });
       }
     } else if (pathOrHandler instanceof Router) {
       this.mountedRouters.push({ router: pathOrHandler });
     } else {
-      this.middleware.push({ handler: pathOrHandler as Handler });
+      this.middlewares.push({ handler: pathOrHandler as Handler });
     }
+  }
+
+  /** Registers middleware; alias for use(). */
+  middleware(handler: Handler): void;
+  middleware(path: string, handler: Handler): void;
+  middleware(pathOrHandler: string | Handler, handler?: Handler): void {
+    this.use(pathOrHandler as never, handler as never);
+  }
+
+  /** Mounts a router; alias for use(). */
+  mount(router: Router): void;
+  mount(path: string, router: Router): void;
+  mount(pathOrRouter: string | Router, router?: Router): void {
+    this.use(pathOrRouter as never, router as never);
   }
 
   /** Registers a GET route.
    * @param path @type {string} - The path.
    * @param handler @type {Handler} - The handler.
-   * @param schema @type {RouteSchema} - The schema.
+   *    * @param schema @type {RouteSchema} - The schema.
    */
-  get(path: string, handler: Handler, schema?: RouteSchema): void {
-    this.addRoute('GET', path, handler, schema);
+  get<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('GET', path, handler, maybeSchema, mws);
   }
-
   /** Registers a POST route.
    * @param path @type {string} - The path.
    * @param handler @type {Handler} - The handler.
    * @param schema @type {RouteSchema} - The schema.
    */
-  post(path: string, handler: Handler, schema?: RouteSchema): void {
-    this.addRoute('POST', path, handler, schema);
+  post<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const maybeSchema = typeof handlers[handlers.length - 1] === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('POST', path, handler, maybeSchema, mws);
   }
 
   /** Registers a PUT route.
@@ -54,8 +103,17 @@ export class Router {
    * @param handler @type {Handler} - The handler.
    * @param schema @type {RouteSchema} - The schema.
    */
-  put(path: string, handler: Handler, schema?: RouteSchema): void {
-    this.addRoute('PUT', path, handler, schema);
+  put<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('PUT', path, handler, maybeSchema, mws);
   }
 
   /** Registers a DELETE route.
@@ -63,8 +121,17 @@ export class Router {
    * @param handler @type {Handler} - The handler.
    * @param schema @type {RouteSchema} - The schema.
    */
-  delete(path: string, handler: Handler, schema?: RouteSchema): void {
-    this.addRoute('DELETE', path, handler, schema);
+  delete<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('DELETE', path, handler, maybeSchema, mws);
   }
 
   /** Registers a PATCH route.
@@ -72,8 +139,55 @@ export class Router {
    * @param handler @type {Handler} - The handler.
    * @param schema @type {RouteSchema} - The schema.
    */
-  patch(path: string, handler: Handler, schema?: RouteSchema): void {
-    this.addRoute('PATCH', path, handler, schema);
+  patch<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('PATCH', path, handler, maybeSchema, mws);
+  }
+
+  /**
+   * Registers a HEAD route.
+   * @param path @type {string} - The path.
+   * @param handler @type {Handler} - The handler.
+   * @param schema @type {RouteSchema} - The schema.
+   */
+  head<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('HEAD', path, handler, maybeSchema, mws);
+  }
+
+  /**
+   * Registers an OPTIONS route.
+   * @param path @type {string} - The path.
+   * @param handler @type {Handler} - The handler.
+   * @param schema @type {RouteSchema} - The schema.
+   */
+  options<Path extends string, TResponse extends JsonValue = JsonValue>(
+    path: Path,
+    ...handlers:
+      | [...Handler[], PathHandler<Path, TResponse>]
+      | [...Handler[], PathHandler<Path, TResponse>, RouteSchema]
+  ): void {
+    const lastArg = handlers[handlers.length - 1] as unknown;
+    const maybeSchema = typeof lastArg === 'object' ? (handlers.pop() as RouteSchema) : undefined;
+    const handler = handlers.pop() as unknown as Handler;
+    const mws = handlers as Handler[];
+    this.addRoute('OPTIONS', path, handler, maybeSchema, mws);
   }
 
   /** Adds a route to the router.
@@ -82,12 +196,19 @@ export class Router {
    * @param handler @type {Handler} - The handler.
    * @param schema @type {RouteSchema} - The schema.
    */
-  private addRoute(method: HttpMethod, path: string, handler: Handler, schema?: RouteSchema): void {
-    const route: Route = { method, path, handler, schema };
+  private addRoute<Path extends string>(
+    method: HttpMethod,
+    path: Path,
+    handler: Handler,
+    schema?: RouteSchema,
+    middlewares: Handler[] = []
+  ): void {
+    const normalizedPath = this.normalizePath(path);
+    const route: Route = { method, path: normalizedPath, handler, schema, middlewares };
 
-    if (path.includes(':')) {
+    if (normalizedPath.includes(':')) {
       const paramNames: string[] = [];
-      const regexPath = path.replace(/:([^/]+)/g, (_match: string, paramName: string) => {
+      const regexPath = normalizedPath.replace(/:([^/]+)/g, (_match: string, paramName: string) => {
         paramNames.push(paramName);
         return '([^/]+)';
       });
@@ -97,7 +218,7 @@ export class Router {
 
     this.routes.push(route);
 
-    const key = `${method}:${path}`;
+    const key = `${method}:${normalizedPath}`;
     if (!this.routeMap.has(key)) {
       this.routeMap.set(key, []);
     }
@@ -105,12 +226,13 @@ export class Router {
   }
 
   /** Handles an incoming request by running middleware and matching routes.
-   * @param req @type {AerixRequest} - The request.
-   * @param res @type {AerixResponse} - The response.
+   * @param req @type {Request} - The request.
+   * @param res @type {Response} - The response.
    */
-  async handle(req: AerixRequest, res: AerixResponse): Promise<void> {
+  async handle(req: Request, res: Response): Promise<void> {
     const method = req.method as HttpMethod;
-    const pathname = (req.url ?? '/').split('?')[0] ?? '/';
+    const rawPathname = (req.url ?? '/').split('?')[0] ?? '/';
+    const pathname = this.normalizePath(rawPathname);
 
     req.path = pathname;
     req.query = this.parseQuery(req.url);
@@ -166,14 +288,14 @@ export class Router {
 
   /** Handles a request for a mounted router.
    * @param mounted @type {{ path?: string; router: Router }} - The mounted router.
-   * @param req @type {AerixRequest} - The request.
-   * @param res @type {AerixResponse} - The response.
+   * @param req @type {Request} - The request.
+   * @param res @type {Response} - The response.
    * @param pathname @type {string} - The original pathname.
    */
   private async handleMountedRouter(
     mounted: { path?: string; router: Router },
-    req: AerixRequest,
-    res: AerixResponse,
+    req: Request,
+    res: Response,
     pathname: string
   ): Promise<void> {
     const originalPath: string | undefined = req.path;
@@ -182,7 +304,8 @@ export class Router {
     // Adjust path for the mounted router
     if (mounted.path) {
       const adjustedPath = pathname.slice(mounted.path.length) || '/';
-      req.path = adjustedPath.startsWith('/') ? adjustedPath : `/${adjustedPath}`;
+      const finalAdjusted = this.normalizePath(adjustedPath);
+      req.path = finalAdjusted;
       req.url = req.path + (req.url?.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
     }
 
@@ -209,7 +332,7 @@ export class Router {
     }
 
     const applicable: Handler[] = [];
-    for (const middleware of this.middleware) {
+    for (const middleware of this.middlewares) {
       if (!middleware.path || pathname.startsWith(middleware.path)) {
         applicable.push(middleware.handler);
       }
@@ -220,24 +343,19 @@ export class Router {
   }
 
   /** Executes a route.
-   * @param req @type {AerixRequest} - The request.
-   * @param res @type {AerixResponse} - The response.
+   * @param req @type {Request} - The request.
+   * @param res @type {Response} - The response.
    * @param method @type {HttpMethod} - The method.
    * @param pathname @type {string} - The pathname.
    */
-  private async executeRoute(
-    req: AerixRequest,
-    res: AerixResponse,
-    method: HttpMethod,
-    pathname: string
-  ): Promise<void> {
+  private async executeRoute(req: Request, res: Response, method: HttpMethod, pathname: string): Promise<void> {
     const exactKey = `${method}:${pathname}`;
     const exactRoutes = this.routeMap.get(exactKey);
     if (exactRoutes && exactRoutes.length > 0) {
       const route = exactRoutes[0];
       if (route) {
         req.params = {};
-        return this.executeHandler(route.handler, req, res);
+        return this.executeRouteWithMiddlewares(route, req, res);
       }
     }
 
@@ -260,7 +378,7 @@ export class Router {
 
       if (isMatch) {
         req.params = params;
-        return this.executeHandler(route.handler, req, res);
+        return this.executeRouteWithMiddlewares(route, req, res);
       }
     }
 
@@ -275,7 +393,7 @@ export class Router {
         // For routers mounted with path prefix, check if they have a route for this path
         const mountedRoutes = mounted.router.getRoutes();
         const adjustedPath = pathname.slice(mounted.path.length) || '/';
-        const finalPath = adjustedPath.startsWith('/') ? adjustedPath : `/${adjustedPath}`;
+        const finalPath = this.normalizePath(adjustedPath);
 
         const hasRoute = mountedRoutes.some(route => {
           if (route.method !== method) return false;
@@ -296,6 +414,48 @@ export class Router {
     }
 
     res.status(404).send('Not Found');
+  }
+
+  /** Runs per-route middlewares (if any) then the route handler. */
+  private async executeRouteWithMiddlewares(route: Route, req: Request, res: Response): Promise<void> {
+    const mws = route.middlewares ?? [];
+    if (mws.length === 0) {
+      return this.executeHandler(route.handler, req, res);
+    }
+
+    let index = 0;
+    return new Promise<void>((resolve, reject) => {
+      const runNext: NextFunction = (err?: Error) => {
+        if (err) return reject(err);
+        const mw = mws[index++];
+        if (!mw) {
+          // run handler
+          try {
+            const out = route.handler(req, res, (e?: Error) => (e ? reject(e) : resolve()));
+            if (out && typeof out === 'object' && typeof (out as { then?: unknown }).then === 'function') {
+              void (out as Promise<unknown>)
+                .then(() => resolve())
+                .catch(e => reject(e instanceof Error ? e : new Error(String(e))));
+            } else {
+              // handler completed synchronously
+              // resolve will be called by next() or immediately if none used
+            }
+          } catch (e) {
+            reject(e instanceof Error ? e : new Error(String(e)));
+          }
+          return;
+        }
+        try {
+          const maybe = mw(req, res, runNext);
+          if (maybe && typeof maybe === 'object' && typeof (maybe as { then?: unknown }).then === 'function') {
+            void (maybe as Promise<unknown>).catch(e => runNext(e instanceof Error ? e : new Error(String(e))));
+          }
+        } catch (e) {
+          runNext(e instanceof Error ? e : new Error(String(e)));
+        }
+      };
+      runNext();
+    });
   }
 
   /** Determines if a request should be handled by a mounted router.
@@ -324,10 +484,10 @@ export class Router {
 
   /** Executes a route handler with Promise handling.
    * @param handler @type {Handler} - The handler to execute.
-   * @param req @type {AerixRequest} - The request.
-   * @param res @type {AerixResponse} - The response.
+   * @param req @type {Request} - The request.
+   * @param res @type {Response} - The response.
    */
-  private async executeHandler(handler: Handler, req: AerixRequest, res: AerixResponse): Promise<void> {
+  private async executeHandler(handler: Handler, req: Request, res: Response): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const next: NextFunction = (err?: Error) => {
         if (err) return reject(err);
@@ -383,10 +543,10 @@ export class Router {
 
   /** Handles an error.
    * @param err @type {Error} - The error.
-   * @param req @type {AerixRequest} - The request.
-   * @param res @type {AerixResponse} - The response.
+   * @param req @type {Request} - The request.
+   * @param res @type {Response} - The response.
    */
-  private handleError(err: Error, req: AerixRequest, res: AerixResponse): void {
+  private handleError(err: Error, req: Request, res: Response): void {
     process.stderr.write(`Router Error: ${String(err)}\n`);
     if (!res.headersSent) {
       res.status(500).send('Internal Server Error');
@@ -403,7 +563,8 @@ export class Router {
     for (const mounted of this.mountedRouters) {
       const mountedRoutes = mounted.router.getRoutes();
       for (const route of mountedRoutes) {
-        const prefixedPath = mounted.path ? `${mounted.path}${route.path}`.replace(/\/+/g, '/') : route.path;
+        const combined = mounted.path ? `${mounted.path}${route.path}` : route.path;
+        const prefixedPath = this.normalizePath(combined);
         allRoutes.push({
           ...route,
           path: prefixedPath,

@@ -1,17 +1,17 @@
-import type { AerixRequest, HttpMethod, JsonValue } from '../types';
+import type { Request, HttpMethod, JsonValue } from '../types';
 import type { IncomingMessage } from 'http';
 
-/** Enhances a Node IncomingMessage with Aerix conveniences.
+/** Enhances a Node IncomingMessage with Bearn conveniences.
  * @param req @type {IncomingMessage} - The incoming message to enhance.
- * @returns @type {AerixRequest} - The enhanced incoming message.
+ * @returns @type {Request} - The enhanced incoming message.
  */
-export function enhanceRequest(req: IncomingMessage): AerixRequest {
-  const AerixReq = req as AerixRequest;
+export function enhanceRequest(req: IncomingMessage): Request {
+  const BearnReq = req as Request;
 
   // Header accessors - optimized
-  function getHeader(this: AerixRequest, name: 'set-cookie'): string[] | undefined;
-  function getHeader(this: AerixRequest, name: string): string | undefined;
-  function getHeader(this: AerixRequest, name: string): string | string[] | undefined {
+  function getHeader(this: Request, name: 'set-cookie'): string[] | undefined;
+  function getHeader(this: Request, name: string): string | undefined;
+  function getHeader(this: Request, name: string): string | string[] | undefined {
     const key = name.toLowerCase();
     if (key === 'set-cookie') {
       const val = this.headers['set-cookie'];
@@ -22,25 +22,25 @@ export function enhanceRequest(req: IncomingMessage): AerixRequest {
     return typeof value === 'string' ? value : undefined;
   }
 
-  AerixReq.get = getHeader;
-  AerixReq.header = getHeader;
+  BearnReq.get = getHeader;
+  BearnReq.header = getHeader;
 
   // URL properties
   if (typeof req.url === 'string') {
-    AerixReq.originalUrl = req.url;
-    AerixReq.path = req.url.split('?')[0] ?? '';
+    BearnReq.originalUrl = req.url;
+    BearnReq.path = req.url.split('?')[0] ?? '';
   }
 
   // Protocol & security
-  AerixReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
-  AerixReq.secure = AerixReq.protocol === 'https';
+  BearnReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
+  BearnReq.secure = BearnReq.protocol === 'https';
 
   // IP addresses
   if (typeof req.socket.remoteAddress === 'string') {
-    AerixReq.ip = req.socket.remoteAddress;
+    BearnReq.ip = req.socket.remoteAddress;
   }
   const forwardedFor = req.headers['x-forwarded-for'];
-  AerixReq.ips = Array.isArray(forwardedFor)
+  BearnReq.ips = Array.isArray(forwardedFor)
     ? forwardedFor.flatMap(s => s.split(',').map(ip => ip.trim()))
     : typeof forwardedFor === 'string'
       ? forwardedFor.split(',').map(ip => ip.trim())
@@ -55,25 +55,25 @@ export function enhanceRequest(req: IncomingMessage): AerixRequest {
       : [];
   if (hostValues.length > 0) {
     const firstValue = hostValues[0] as string;
-    AerixReq.hostname = firstValue.split(':')[0] ?? '';
-    AerixReq.host = firstValue;
+    BearnReq.hostname = firstValue.split(':')[0] ?? '';
+    BearnReq.host = firstValue;
     const portMatch = firstValue.match(/:(\d+)/) ?? [];
-    AerixReq.port = parseInt(portMatch[1] ?? '0', 10);
+    BearnReq.port = parseInt(portMatch[1] ?? '0', 10);
   }
 
   // Request properties
-  AerixReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
-  AerixReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
-  AerixReq.stale = true;
-  AerixReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
-  AerixReq.subdomains = AerixReq.hostname ? AerixReq.hostname.split('.').slice(0, -2) : [];
+  BearnReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
+  BearnReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
+  BearnReq.stale = true;
+  BearnReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
+  BearnReq.subdomains = BearnReq.hostname ? BearnReq.hostname.split('.').slice(0, -2) : [];
 
   // Accept headers parsing (cached and optimized)
   const acceptsHeaderRaw = Array.isArray(req.headers.accept)
     ? req.headers.accept.join(',')
     : (req.headers.accept ?? '');
   const acceptsList = acceptsHeaderRaw ? acceptsHeaderRaw.split(',').map(t => t.trim()) : [];
-  AerixReq.accepts = function (): string[] {
+  BearnReq.accepts = function (): string[] {
     return acceptsList;
   };
 
@@ -81,7 +81,7 @@ export function enhanceRequest(req: IncomingMessage): AerixRequest {
     ? req.headers['accept-charset'][0]
     : req.headers['accept-charset'];
   const acceptsCharsetList = acceptsCharsetRaw ? acceptsCharsetRaw.split(',').map(c => c.trim()) : [];
-  AerixReq.acceptsCharsets = function (): string[] {
+  BearnReq.acceptsCharsets = function (): string[] {
     return acceptsCharsetList;
   };
 
@@ -89,7 +89,7 @@ export function enhanceRequest(req: IncomingMessage): AerixRequest {
     ? req.headers['accept-encoding'].join(',')
     : (req.headers['accept-encoding'] ?? '');
   const acceptsEncodingList = acceptsEncodingRaw ? acceptsEncodingRaw.split(',').map(e => e.trim()) : [];
-  AerixReq.acceptsEncodings = function (): string[] {
+  BearnReq.acceptsEncodings = function (): string[] {
     return acceptsEncodingList;
   };
 
@@ -97,18 +97,37 @@ export function enhanceRequest(req: IncomingMessage): AerixRequest {
     ? req.headers['accept-language'].join(',')
     : (req.headers['accept-language'] ?? '');
   const acceptsLanguageList = acceptsLanguageRaw ? acceptsLanguageRaw.split(',').map(l => l.trim()) : [];
-  AerixReq.acceptsLanguages = function (): string[] {
+  BearnReq.acceptsLanguages = function (): string[] {
     return acceptsLanguageList;
   };
 
-  return AerixReq;
+  // Cookies parsing
+  const cookieHeaderRaw = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
+  if (cookieHeaderRaw) {
+    const pairs = cookieHeaderRaw.split(';');
+    const cookies: Record<string, string> = {};
+    for (let i = 0; i < pairs.length; i++) {
+      const part = pairs[i];
+      if (!part) continue;
+      const idx = part.indexOf('=');
+      if (idx === -1) continue;
+      const key = part.slice(0, idx).trim();
+      const val = part.slice(idx + 1).trim();
+      if (key) cookies[decodeURIComponent(key)] = decodeURIComponent(val);
+    }
+    BearnReq.cookies = cookies;
+  } else {
+    BearnReq.cookies = {};
+  }
+
+  return BearnReq;
 }
 
 /** Parses request body based on Content-Type with simple safeguards.
- * @param req @type {AerixRequest} - The request to parse the body of.
+ * @param req @type {Request} - The request to parse the body of.
  * @returns @type {Promise<void>} - A promise that resolves when the body is parsed.
  */
-export async function parseBody(req: AerixRequest): Promise<void> {
+export async function parseBody(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
     const contentLength = parseInt(req.headers['content-length'] ?? '0', 10);
 

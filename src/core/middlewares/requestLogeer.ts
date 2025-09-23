@@ -1,6 +1,6 @@
-import type { AerixRequest, AerixResponse, NextFunction } from '../../types';
+import type { Request, Response, NextFunction } from '../../types';
 
-export function requestLogger(req: AerixRequest, res: AerixResponse, next: NextFunction) {
+export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   const reset = '\x1b[0m';
   const bold = '\x1b[1m';

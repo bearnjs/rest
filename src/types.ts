@@ -19,6 +19,18 @@ export interface CookieOptions {
    * @returns number
    */
   maxAge?: number;
+  /** Cookie path scope
+   * @returns string
+   */
+  path?: string;
+  /** Cookie domain scope
+   * @returns string
+   */
+  domain?: string;
+  /** SameSite attribute
+   * @returns 'strict' | 'lax' | 'none'
+   */
+  sameSite?: 'strict' | 'lax' | 'none';
 }
 
 /**
@@ -40,12 +52,205 @@ export type JsonPrimitive = string | number | boolean | null;
  */
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
+/** Utility to allow a type or an array of that type */
+export type MaybeArray<T> = T | T[];
+export type SetContentType =
+  | 'application/octet-stream'
+  | 'application/vnd.ms-fontobject'
+  | 'application/epub+zip'
+  | 'application/gzip'
+  | 'application/json'
+  | 'application/ld+json'
+  | 'application/ogg'
+  | 'application/pdf'
+  | 'application/rtf'
+  | 'application/wasm'
+  | 'application/xhtml+xml'
+  | 'application/xml'
+  | 'application/zip'
+  | 'text/css'
+  | 'text/csv'
+  | 'text/calendar'
+  | 'text/event-stream'
+  | 'text/html'
+  | 'text/javascript'
+  | 'text/plain'
+  | 'text/xml'
+  | 'image/avif'
+  | 'image/bmp'
+  | 'image/gif'
+  | 'image/x-icon'
+  | 'image/jpeg'
+  | 'image/png'
+  | 'image/svg+xml'
+  | 'image/tiff'
+  | 'image/webp'
+  | 'multipart/mixed'
+  | 'multipart/alternative'
+  | 'multipart/form-data'
+  | 'audio/aac'
+  | 'audio/x-midi'
+  | 'audio/mpeg'
+  | 'audio/ogg'
+  | 'audio/opus'
+  | 'audio/webm'
+  | 'video/x-msvideo'
+  | 'video/quicktime'
+  | 'video/x-ms-wmv'
+  | 'video/x-flv'
+  | 'video/av1'
+  | 'video/mp4'
+  | 'video/mpeg'
+  | 'video/ogg'
+  | 'video/mp2t'
+  | 'video/webm'
+  | 'video/3gpp'
+  | 'video/3gpp2'
+  | 'font/otf'
+  | 'font/ttf'
+  | 'font/woff'
+  | 'font/woff2'
+  | 'model/gltf+json'
+  | 'model/gltf-binary';
+
+/**
+ * Content type hints and MIME types used in requests/responses
+ */
+export type ContentType = MaybeArray<
+  | 'none'
+  | 'text'
+  | 'json'
+  | 'formdata'
+  | 'urlencoded'
+  | 'arrayBuffer'
+  | 'text/plain'
+  | 'application/json'
+  | 'multipart/form-data'
+  | 'application/x-www-form-urlencoded'
+  | 'application/octet-stream'
+>;
+
+/**
+ * Strongly typed HTTP headers record
+ */
+export type HTTPHeaders = Record<string, string | number> & {
+  'www-authenticate'?: string;
+  authorization?: string;
+  'proxy-authenticate'?: string;
+  'proxy-authorization'?: string;
+
+  age?: string;
+  'cache-control'?: string;
+  'clear-site-data'?: string;
+  expires?: string;
+  'no-vary-search'?: string;
+  pragma?: string;
+
+  'last-modified'?: string;
+  etag?: string;
+  'if-match'?: string;
+  'if-none-match'?: string;
+  'if-modified-since'?: string;
+  'if-unmodified-since'?: string;
+  vary?: string;
+
+  connection?: string;
+  'keep-alive'?: string;
+
+  accept?: string;
+  'accept-encoding'?: string;
+  'accept-language'?: string;
+
+  expect?: string;
+  'max-forwards'?: string;
+
+  cookie?: string;
+  'set-cookie'?: string | string[];
+
+  'access-control-allow-origin'?: string;
+  'access-control-allow-credentials'?: string;
+  'access-control-allow-headers'?: string;
+  'access-control-allow-methods'?: string;
+  'access-control-expose-headers'?: string;
+  'access-control-max-age'?: string;
+  'access-control-request-headers'?: string;
+  'access-control-request-method'?: string;
+  origin?: string;
+  'timing-allow-origin'?: string;
+
+  'content-disposition'?: string;
+
+  'content-length'?: string | number;
+  'content-type'?: SetContentType | (string & {});
+  'content-encoding'?: string;
+  'content-language'?: string;
+  'content-location'?: string;
+
+  forwarded?: string;
+  via?: string;
+
+  location?: string;
+  refresh?: string;
+
+  allow?: string;
+  server?: 'Elysia' | (string & {});
+
+  'accept-ranges'?: string;
+  range?: string;
+  'if-range'?: string;
+  'content-range'?: string;
+
+  'content-security-policy'?: string;
+  'content-security-policy-report-only'?: string;
+  'cross-origin-embedder-policy'?: string;
+  'cross-origin-opener-policy'?: string;
+  'cross-origin-resource-policy'?: string;
+  'expect-ct'?: string;
+  'permission-policy'?: string;
+  'strict-transport-security'?: string;
+  'upgrade-insecure-requests'?: string;
+  'x-content-type-options'?: string;
+  'x-frame-options'?: string;
+  'x-xss-protection'?: string;
+
+  'last-event-id'?: string;
+  'ping-from'?: string;
+  'ping-to'?: string;
+  'report-to'?: string;
+
+  te?: string;
+  trailer?: string;
+  'transfer-encoding'?: string;
+
+  'alt-svg'?: string;
+  'alt-used'?: string;
+  date?: string;
+  dnt?: string;
+  'early-data'?: string;
+  'large-allocation'?: string;
+  link?: string;
+  'retry-after'?: string;
+  'service-worker-allowed'?: string;
+  'source-map'?: string;
+  upgrade?: string;
+
+  'x-dns-prefetch-control'?: string;
+  'x-forwarded-for'?: string;
+  'x-forwarded-host'?: string;
+  'x-forwarded-proto'?: string;
+  'x-powered-by'?: 'Elysia' | (string & {});
+  'x-request-id'?: string;
+  'x-requested-with'?: string;
+  'x-robots-tag'?: string;
+  'x-ua-compatible'?: string;
+};
+
 /**
  * Augmented Node IncomingMessage with framework conveniences.
  * Extends the base Node IncomingMessage with additional properties and methods.
- * @returns AerixRequest
+ * @returns Request
  */
-export interface AerixRequest extends IncomingMessage {
+export interface Request extends IncomingMessage {
   /** URL parameters parsed from route pattern
    * @returns URL parameters parsed from route pattern
    */
@@ -75,6 +280,11 @@ export interface AerixRequest extends IncomingMessage {
    * @returns Raw unparsed request body
    */
   rawBody?: string;
+
+  /** Parsed cookies from Cookie header
+   * @returns Map of cookie name to value
+   */
+  cookies?: Record<string, string>;
 
   /**
    * Get header value by name
@@ -180,134 +390,140 @@ export interface AerixRequest extends IncomingMessage {
 /**
  * Augmented Node ServerResponse with Express-like helpers.
  * Extends the base Node ServerResponse with additional methods.
- * @returns AerixResponse
+ * @returns Response
  */
-export interface AerixResponse extends ServerResponse {
+export interface Response extends ServerResponse {
   /**
    * Send a JSON response
    * @param data Data to send as JSON
-   * @returns AerixResponse
+   * @returns Response
    */
-  json(data: JsonValue): AerixResponse;
+  json(data: JsonValue): Response;
 
   /**
    * Send a response
    * @param data Data to send
-   * @returns AerixResponse
+   * @returns Response
    */
-  send(data: string | Buffer): AerixResponse;
+  send(data: string | Buffer): Response;
 
   /**
    * Set response status code
    * @param code HTTP status code
-   * @returns AerixResponse
+   * @returns Response
    */
-  status(code: number): AerixResponse;
+  status(code: number): Response;
 
   /**
    * Send status code as response
    * @param code HTTP status code
-   * @returns AerixResponse
+   * @returns Response
    */
-  sendStatus(code: number): AerixResponse;
+  sendStatus(code: number): Response;
 
   /**
    * Set Content-Type header
    * @param type MIME type
-   * @returns AerixResponse
+   * @returns Response
    */
-  type(type: string): AerixResponse;
+  type(type: SetContentType | (string & {})): Response;
 
   /**
    * Set Content-Type header
    * @param type MIME type
-   * @returns AerixResponse
+   * @returns Response
    */
-  contentType(type: string): AerixResponse;
+  contentType(type: SetContentType | (string & {})): Response;
 
   /**
    * Redirect to URL
    * @param url Redirect target URL
    * @param status HTTP status code
-   * @returns AerixResponse
+   * @returns Response
    */
-  redirect(url: string, status?: number): AerixResponse;
+  redirect(url: string, status?: number): Response;
 
   /**
    * Set response header
    * @param field Header name or object
    * @param value Header value
-   * @returns AerixResponse
+   * @returns Response
    */
-  set(field: string | Record<string, string | string[]>, value?: string | string[]): AerixResponse;
+  set(field: HTTPHeaders): Response;
+  set(field: string, value?: string | string[] | number): Response;
+  set<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response;
 
   /**
    * Set response header (alias for set())
    * @param field Header name or object
    * @param value Header value
-   * @returns AerixResponse
+   * @returns Response
    */
-  header(field: string | Record<string, string | string[]>, value?: string | string[]): AerixResponse;
+  header(field: HTTPHeaders): Response;
+  header(field: string, value?: string | string[] | number): Response;
+  header<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response;
 
   /**
    * Get response header
    * @param field Header name
-   * @returns AerixResponse
+   * @returns Response
    */
   get(field: string): string | undefined;
+  get<K extends keyof HTTPHeaders>(field: K): HTTPHeaders[K] | undefined;
 
   /**
    * Append to response header
    * @param field Header name
    * @param value Value to append
-   * @returns AerixResponse
+   * @returns Response
    */
-  append(field: string, value?: string[] | string): AerixResponse;
+  append(field: string, value?: string[] | string | number): Response;
+  append<K extends keyof HTTPHeaders>(field: K, value?: HTTPHeaders[K]): Response;
 
   /**
    * Set Link headers
    * @param links Object of link relations
-   * @returns AerixResponse
+   * @returns Response
    */
-  links(links: Record<string, string>): AerixResponse;
+  links(links: Record<string, string>): Response;
 
   /**
    * Set Location header
    * @param url URL to set in Location header
-   * @returns AerixResponse
+   * @returns Response
    */
-  location(url: string): AerixResponse;
+  location(url: string): Response;
 
   /**
    * Add field to Vary header
    * @param field Header to vary on
-   * @returns AerixResponse
+   * @returns Response
    */
-  vary(field: string): AerixResponse;
+  vary(field: string): Response;
 
   /**
    * Send JSONP response
    * @param data Data to send as JSONP
-   * @returns AerixResponse
+   * @returns Response
    */
-  jsonp(data: JsonValue): AerixResponse;
+  jsonp(data: JsonValue): Response;
 
   /**
    * Set cookie
    * @param name Cookie name
    * @param value Cookie value
    * @param options Cookie options
-   * @returns AerixResponse
+   * @returns Response
    */
-  cookie(name: string, value: string, options?: CookieOptions): AerixResponse;
+  cookie(name: string, value: string, options?: CookieOptions): Response;
 
   /**
    * Clear cookie
    * @param name Cookie name
    * @param options Cookie options
-   * @returns AerixResponse
+   * @returns Response
    */
-  clearCookie(name: string, options?: CookieOptions): AerixResponse;
+  clearCookie(name: string, options?: CookieOptions): Response;
 }
 
 /**
@@ -324,7 +540,7 @@ export type NextFunction = (err?: Error) => void;
  * @param next Next function
  * @returns Handler
  */
-export type Handler = (req: AerixRequest, res: AerixResponse, next: NextFunction) => void | Promise<void>;
+export type Handler = (req: Request, res: Response, next: NextFunction) => void | Response | Promise<void | Response>;
 
 /**
  * Global error handler signature.
@@ -334,10 +550,51 @@ export type Handler = (req: AerixRequest, res: AerixResponse, next: NextFunction
  * @param next Next function
  * @returns ErrorHandler
  */
-export type ErrorHandler = (err: Error, req: AerixRequest, res: AerixResponse, next: NextFunction) => void;
+export type ErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
 
 /** HTTP method type */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+
+/**
+ * Extended HTTP method literals aligned with various specifications and proxies
+ */
+export type HTTPMethod =
+  | (string & {})
+  | 'ACL'
+  | 'BIND'
+  | 'CHECKOUT'
+  | 'CONNECT'
+  | 'COPY'
+  | 'DELETE'
+  | 'GET'
+  | 'HEAD'
+  | 'LINK'
+  | 'LOCK'
+  | 'M-SEARCH'
+  | 'MERGE'
+  | 'MKACTIVITY'
+  | 'MKCALENDAR'
+  | 'MKCOL'
+  | 'MOVE'
+  | 'NOTIFY'
+  | 'OPTIONS'
+  | 'PATCH'
+  | 'POST'
+  | 'PROPFIND'
+  | 'PROPPATCH'
+  | 'PURGE'
+  | 'PUT'
+  | 'REBIND'
+  | 'REPORT'
+  | 'SEARCH'
+  | 'SOURCE'
+  | 'SUBSCRIBE'
+  | 'TRACE'
+  | 'UNBIND'
+  | 'UNLINK'
+  | 'UNLOCK'
+  | 'UNSUBSCRIBE'
+  | 'ALL';
 
 /**
  * Registered route definition at runtime.
@@ -367,6 +624,8 @@ export interface Route {
    */
   /** Route schema metadata */
   schema?: RouteSchema | undefined;
+  /** Optional per-route middlewares (run before handler) */
+  middlewares?: Handler[];
 }
 
 /**
@@ -461,6 +720,11 @@ export interface AppOptions {
    * @returns The listen backlog size.
    */
   backlog?: number;
+  /**
+   * The CORS configuration.
+   * @returns The CORS configuration.
+   */
+  cors?: CorsOptions | false;
 }
 
 /** CORS configuration passed to the CORS middleware */
@@ -478,7 +742,7 @@ export interface CorsOptions {
    * The allowed HTTP methods.
    * @returns The allowed HTTP methods.
    */
-  methods?: string[];
+  methods?: HTTPMethod[];
   /**
    * The allowed headers.
    * @returns The allowed headers.
@@ -499,19 +763,6 @@ export interface CorsOptions {
    * @returns The preflight cache time.
    */
   maxAgeSeconds?: number;
-}
-
-/** Top-level application options */
-/**
- * Top-level application options
- * @returns @type {AppOptions}
- */
-export interface AppOptions {
-  /**
-   * The CORS configuration.
-   * @returns The CORS configuration.
-   */
-  cors?: CorsOptions | false;
 }
 
 /**
@@ -546,14 +797,21 @@ export interface RouteDefinition {
    * @returns The route schema metadata.
    */
   schema?: RouteSchema;
+  /**
+   * Middlewares to run before the handler
+   */
+  middlewares?: Handler[];
 }
 
 /**
  * Minimal schema structure usable for OpenAPI generation
- * @returns @type {RouteSchema}
- */
-/**
- * Minimal schema structure usable for OpenAPI generation
+ * @param summary The short summary.
+ * @param description The detailed description.
+ * @param tags The OpenAPI tags.
+ * @param params The URL parameter schemas.
+ * @param query The query parameter schemas.
+ * @param body The request body schema.
+ * @param responses The response schemas.
  * @returns @type {RouteSchema}
  */
 export interface RouteSchema {
@@ -600,13 +858,17 @@ export interface RouteSchema {
 
 /**
  * Strongly-typed request convenience for route authors
+ * @param TParams The type of the URL parameters
+ * @param TQuery The type of the query parameters
+ * @param TBody The type of the request body
+ * @param TResponse The type of the response
  * @returns @type {TypedRequest}
  */
 export type TypedRequest<
   TParams extends Record<string, string> = Record<string, string>,
   TQuery extends Record<string, string> = Record<string, string>,
   TBody extends JsonValue = JsonValue,
-> = Omit<AerixRequest, 'params' | 'query' | 'body' | 'method'> & {
+> = Omit<Request, 'params' | 'query' | 'body' | 'method'> & {
   /**
    * Typed URL parameters
    * @returns The typed URL parameters.
@@ -631,15 +893,16 @@ export type TypedRequest<
 
 /**
  * Strongly-typed response convenience for route authors
+ * @param TResponse The type of the response
  * @returns @type {TypedResponse}
  */
-export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<AerixResponse, 'json'> & {
+export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<Response, 'json'> & {
   /**
    * Send typed JSON response
    * @param data Response data
-   * @returns AerixResponse
+   * @returns Response
    */
-  json(data: TResponse): AerixResponse;
+  json(data: TResponse): Response;
 };
 
 /**
@@ -648,7 +911,7 @@ export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<AerixR
  * @param TQuery The type of the query parameters
  * @param TBody The type of the request body
  * @param TResponse The type of the response
- * @returns RouteHandler
+ * @returns @type {RouteHandler}
  */
 export type RouteHandler<
   TParams extends Record<string, string> = Record<string, string>,
@@ -659,4 +922,27 @@ export type RouteHandler<
   req: TypedRequest<TParams, TQuery, TBody>,
   res: TypedResponse<TResponse>,
   next: NextFunction
-) => void | Promise<void>;
+) => void | Response | Promise<void | Response>;
+
+/**
+ * Extract path parameter names into a record type
+ * e.g. "/users/:id/books/:bookId" -> { id: string; bookId: string }
+ * @param TPath The type of the path
+ * @returns @type {ExtractPathParams}
+ */
+export type ExtractPathParams<TPath extends string> = TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
+  ? { [K in Param]: string } & ExtractPathParams<`/${Rest}`>
+  : TPath extends `${infer _Start}:${infer Param}`
+  ? { [K in Param]: string } // prettier-ignore
+  : Record<string, never>; // prettier-ignore
+
+/**
+ * Strongly-typed handler inferred from the literal path
+ * Accepts either a standard Handler or a typed RouteHandler with inferred params
+ * @param TPath The type of the path
+ * @param TResponse The type of the response
+ * @returns @type {PathHandler}
+ */
+export type PathHandler<TPath extends string, TResponse extends JsonValue = JsonValue> =
+  | Handler
+  | RouteHandler<ExtractPathParams<TPath>, Record<string, string>, JsonValue, TResponse>;

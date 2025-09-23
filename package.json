@@ -1,16 +1,56 @@
 {
-  "name": "@aerix/rest",
-  "version": "0.1.1",
+  "name": "@bearn/rest",
+  "version": "0.1.2",
   "description": "A fast and lightweight HTTP framework built from scratch in TypeScript",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./decorators": {
+      "types": "./dist/decorators.d.ts",
+      "import": "./dist/decorators.js",
+      "require": "./dist/decorators.cjs"
+    },
+    "./routing/router": {
+      "types": "./dist/routing/router.d.ts",
+      "import": "./dist/routing/router.js",
+      "require": "./dist/routing/router.cjs"
+    },
+    "./core/app": {
+      "types": "./dist/core/app.d.ts",
+      "import": "./dist/core/app.js",
+      "require": "./dist/core/app.cjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "require": "./dist/types.cjs"
+    },
+    "./exceptions": {
+      "types": "./dist/exceptions.d.ts",
+      "import": "./dist/exceptions.js",
+      "require": "./dist/exceptions.cjs"
+    },
+    "./validation/zod": {
+      "types": "./dist/validation/zod.d.ts",
+      "import": "./dist/validation/zod.js",
+      "require": "./dist/validation/zod.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*",
+        "dist/index.d.ts"
+      ]
     }
   },
   "author": "himonshuuu",
@@ -21,13 +61,13 @@
     "framework",
     "typescript"
   ],
-  "homepage": "https://github.com/himonshuuu/aerix-rest#readme",
+  "homepage": "https://github.com/himonshuuu/bearn-rest#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/himonshuuu/aerix-rest.git"
+    "url": "git+https://github.com/himonshuuu/bearn-rest.git"
   },
   "bugs": {
-    "url": "https://github.com/himonshuuu/aerix-rest/issues"
+    "url": "https://github.com/himonshuuu/bearn-rest/issues"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -40,7 +80,7 @@
     "build": "tsup",
     "build:watch": "tsup --watch",
     "build:tsc": "tsc",
-    "docs": "typedoc",
+    "docs": "documentation build --config .documentation.yml",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
@@ -63,9 +103,12 @@
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",
     "tsup": "^8.5.0",
-    "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0"
+    "typescript-eslint": "^8.43.0",
+    "documentation": "^14.0.0"
+  },
+  "dependencies": {
+    "zod": "^4.1.11"
   },
   "lint-staged": {
     "*.{js,ts,tsx,json,md}": [

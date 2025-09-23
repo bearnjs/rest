@@ -9,20 +9,20 @@ import { enhanceRequest, parseBody } from '../http/request';
 import { enhanceResponse } from '../http/response';
 import { Router } from '../routing/router';
 
-import type { AppOptions, AerixRequest, AerixResponse, ErrorHandler, Handler, ListenInfo, Route } from '../types';
+import type { AppOptions, Request, Response, ErrorHandler, Handler, ListenInfo, Route } from '../types';
 import type { Server } from 'http';
 
 /**
- * Creates a new Aerix application instance.
+ * Creates a new Bearn application instance.
  *
- * This is the recommended way to create a new Aerix application rather than
- * instantiating {@link AerixApp} directly.
+ * This is the recommended way to create a new Bearn application rather than
+ * instantiating {@link BearnApp} directly.
  *
  * @example
  * ```ts
- * import Aerix from 'Aerix';
+ * import Bearn from 'Bearn';
  *
- * const app = Aerix({
+ * const app = Bearn({
  *   port: 3000,
  *   cors: {
  *     origin: 'http://localhost:3000',
@@ -33,14 +33,14 @@ import type { Server } from 'http';
  * app.start();
  * ```
  *
- * @param options - Configuration options for the Aerix application
- * @returns A new configured Aerix application instance
+ * @param options - Configuration options for the Bearn application
+ * @returns A new configured Bearn application instance
  */
-export class AerixApp extends Router {
+export class BearnApp extends Router {
   private server?: Server;
   private errorHandlers: ErrorHandler[] = [];
   private decoratorsRegistered = false;
-  private options: AppOptions = {};
+  private appOptions: AppOptions = {};
 
   /** Registers a middleware.
    * @param handler @type {Handler} - The middleware handler.
@@ -56,13 +56,13 @@ export class AerixApp extends Router {
   }
 
   /**
-   * Creates a new Aerix application instance.
+   * Creates a new Bearn application instance.
    * Pass {@link AppOptions} to customize listening, logging, and CORS.
-   * @param options @type {AppOptions} - The options for the Aerix application.
+   * @param options @type {AppOptions} - The options for the Bearn application.
    */
   constructor(options: AppOptions = {}) {
     super();
-    this.options = options;
+    this.appOptions = options;
     if (options.cors) {
       this.use(createCorsMiddleware(options.cors));
     }
@@ -78,28 +78,28 @@ export class AerixApp extends Router {
    * @returns @type {Server} - The underlying Node `Server` instance.
    */
   start(callback?: (info: ListenInfo) => void): Server {
-    const { host: configHost, port = 8000, backlog, appName, appVersion } = this.options;
+    const { host: configHost, port = 8000, backlog, appName, appVersion } = this.appOptions;
 
     let host = configHost;
     if (host === '[::]') host = '::';
     else if (host === '[::1]') host = '::1';
 
     this.server = createServer((req, res) => {
-      const AerixReq = enhanceRequest(req);
-      const AerixRes = enhanceResponse(res);
+      const BearnReq = enhanceRequest(req) as Request;
+      const BearnRes = enhanceResponse(res) as Response;
 
       void (async () => {
         if (['POST', 'PUT', 'PATCH'].includes(req.method ?? '')) {
-          await parseBody(AerixReq);
+          await parseBody(BearnReq);
         }
 
         if (!this.decoratorsRegistered) {
           this.registerDecoratedControllers();
           this.decoratorsRegistered = true;
         }
-        await this.handle(AerixReq, AerixRes);
+        await this.handle(BearnReq, BearnRes);
       })().catch((err: unknown) => {
-        this.handleGlobalError(err instanceof Error ? err : new Error(String(err)), AerixReq, AerixRes);
+        this.handleGlobalError(err instanceof Error ? err : new Error(String(err)), BearnReq, BearnRes);
       });
     });
 
@@ -156,16 +156,16 @@ export class AerixApp extends Router {
         nodeVersion: process.version,
         platform: process.platform,
         pid: process.pid,
-        appName: appName ?? 'Aerix',
+        appName: appName ?? 'Bearn',
         appVersion: appVersion ?? '0.1.0',
       };
 
-      const { disableLogging, printRoutes } = this.options;
+      const { disableLogging, printRoutes } = this.appOptions;
       const logOptions = {
         host: originalHost ?? 'localhost',
         disableLogging: disableLogging ?? false,
         printRoutes: printRoutes ?? false,
-        appName: appName ?? 'Aerix',
+        appName: appName ?? 'Bearn',
         appVersion: appVersion ?? '0.1.0',
       };
 
@@ -200,7 +200,7 @@ export class AerixApp extends Router {
     this.errorHandlers.push(handler);
   }
 
-  private handleGlobalError(err: Error, req: AerixRequest, res: AerixResponse): void {
+  private handleGlobalError(err: Error, req: Request, res: Response): void {
     for (const handler of this.errorHandlers) {
       try {
         handler(err, req, res, () => { }); // prettier-ignore
@@ -239,20 +239,47 @@ export class AerixApp extends Router {
     for (const ctrl of getRegisteredControllers()) {
       const instance = ctrl.instance as Record<
         string,
-        (req: AerixRequest, res: AerixResponse, next?: (err?: Error) => void) => unknown
+        (req: Request, res: Response, next?: (err?: Error) => void) => unknown
       >;
 
       for (const r of ctrl.routes) {
         const fullPath = `${ctrl.basePath}${r.path}`.replace(/\/+/g, '/');
         const methodRef = instance[r.propertyKey];
 
-        const boundHandler = (req: AerixRequest, res: AerixResponse, next?: (err?: Error) => void) => {
+        const boundHandler = (req: Request, res: Response, next?: (err?: Error) => void) => {
           if (typeof methodRef !== 'function') {
             next?.(new Error(`Handler ${String(r.propertyKey)} is not a function`));
             return;
           }
 
-          const result = methodRef.call(instance, req, res, next);
+          const run = () => methodRef.call(instance, req, res, next);
+          const mws = r.middlewares ?? [];
+          if (mws.length > 0) {
+            let i = 0;
+            const runNext = (err?: Error) => {
+              if (err) return next?.(err);
+              const mw = mws[i++];
+              if (!mw) {
+                const out = run();
+                if (out && typeof out === 'object' && 'then' in out) {
+                  void (out as Promise<unknown>).catch(e => next?.(e instanceof Error ? e : new Error(String(e))));
+                }
+                return;
+              }
+              try {
+                const maybe = mw(req, res, runNext);
+                if (maybe && typeof maybe === 'object' && 'then' in maybe) {
+                  void (maybe as Promise<unknown>).catch(e => runNext(e instanceof Error ? e : new Error(String(e))));
+                }
+              } catch (e) {
+                runNext(e instanceof Error ? e : new Error(String(e)));
+              }
+            };
+            runNext();
+            return;
+          }
+
+          const result = run();
           if (result && typeof result === 'object' && 'then' in result) {
             void (result as Promise<unknown>).catch(e => next?.(e instanceof Error ? e : new Error(String(e))));
           }

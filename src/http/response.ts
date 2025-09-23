@@ -1,22 +1,86 @@
 import { STATUS_CODES, type ServerResponse } from 'http';
 
-import type { AerixResponse, CookieOptions, JsonValue } from '../types';
+import type { Response, CookieOptions, JsonValue } from '../types';
 
-/** Enhances a Node ServerResponse with Aerix helpers.
+/** Enhances a Node ServerResponse with Bearn helpers.
  * @param res @type {ServerResponse} - The server response to enhance.
- * @returns @type {AerixResponse} - The enhanced server response.
+ * @returns @type {Response} - The enhanced server response.
  */
-export function enhanceResponse(res: ServerResponse): AerixResponse {
-  const AerixRes = res as AerixResponse;
+const mimeMap = new Map([
+  ['html', 'text/html'],
+  ['json', 'application/json'],
+  ['txt', 'text/plain'],
+  ['text', 'text/plain'],
+  ['css', 'text/css'],
+  ['js', 'text/javascript'],
+  ['mjs', 'text/javascript'],
+  ['csv', 'text/csv'],
+  ['xml', 'text/xml'],
+  ['ics', 'text/calendar'],
+  ['png', 'image/png'],
+  ['jpg', 'image/jpeg'],
+  ['jpeg', 'image/jpeg'],
+  ['gif', 'image/gif'],
+  ['webp', 'image/webp'],
+  ['svg', 'image/svg+xml'],
+  ['ico', 'image/x-icon'],
+  ['tiff', 'image/tiff'],
+  ['avif', 'image/avif'],
+  ['bmp', 'image/bmp'],
+  ['pdf', 'application/pdf'],
+  ['zip', 'application/zip'],
+  ['gz', 'application/gzip'],
+  ['wasm', 'application/wasm'],
+  ['rtf', 'application/rtf'],
+  ['epub', 'application/epub+zip'],
+  ['ogg', 'application/ogg'],
+  ['jsonld', 'application/ld+json'],
+  ['xhtml', 'application/xhtml+xml'],
+  ['bin', 'application/octet-stream'],
+  ['eot', 'application/vnd.ms-fontobject'],
+  ['aac', 'audio/aac'],
+  ['midi', 'audio/x-midi'],
+  ['mp3', 'audio/mpeg'],
+  ['oga', 'audio/ogg'],
+  ['opus', 'audio/opus'],
+  ['weba', 'audio/webm'],
+  ['avi', 'video/x-msvideo'],
+  ['mov', 'video/quicktime'],
+  ['wmv', 'video/x-ms-wmv'],
+  ['flv', 'video/x-flv'],
+  ['av1', 'video/av1'],
+  ['mp4', 'video/mp4'],
+  ['mpeg', 'video/mpeg'],
+  ['ogv', 'video/ogg'],
+  ['ts', 'video/mp2t'],
+  ['webm', 'video/webm'],
+  ['3gp', 'video/3gpp'],
+  ['3g2', 'video/3gpp2'],
+  ['otf', 'font/otf'],
+  ['ttf', 'font/ttf'],
+  ['woff', 'font/woff'],
+  ['woff2', 'font/woff2'],
+  ['gltf', 'model/gltf+json'],
+  ['glb', 'model/gltf-binary'],
+]);
 
-  AerixRes.json = function (data: JsonValue): AerixResponse {
+function resolveMime(input: string): string {
+  if (input.includes('/')) return input;
+  const key = input.startsWith('.') ? input.slice(1) : input;
+  return mimeMap.get(key.toLowerCase()) ?? 'application/octet-stream';
+}
+
+export function enhanceResponse(res: ServerResponse): Response {
+  const BearnRes = res as Response;
+
+  BearnRes.json = function (data: JsonValue): Response {
     if (!this.hasHeader('Content-Type')) this.setHeader('Content-Type', 'application/json');
     // Use direct JSON.stringify for better performance
     this.end(JSON.stringify(data));
     return this;
   };
 
-  AerixRes.send = function (data: string | Buffer): AerixResponse {
+  BearnRes.send = function (data: string | Buffer): Response {
     if (typeof data === 'string' && !this.hasHeader('Content-Type')) {
       this.setHeader('Content-Type', 'text/html');
     }
@@ -24,12 +88,12 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
     return this;
   };
 
-  AerixRes.status = function (code: number): AerixResponse {
+  BearnRes.status = function (code: number): Response {
     this.statusCode = code;
     return this;
   };
 
-  AerixRes.sendStatus = function (code: number): AerixResponse {
+  BearnRes.sendStatus = function (code: number): Response {
     this.statusCode = code;
     const message = STATUS_CODES[code] ?? String(code);
     if (!this.hasHeader('Content-Type')) this.setHeader('Content-Type', 'text/plain');
@@ -37,58 +101,35 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
     return this;
   };
 
-  // content-type helpers - optimized with Map
-  const mimeMap = new Map([
-    ['html', 'text/html'],
-    ['json', 'application/json'],
-    ['txt', 'text/plain'],
-    ['text', 'text/plain'],
-    ['css', 'text/css'],
-    ['js', 'application/javascript'],
-    ['mjs', 'application/javascript'],
-    ['png', 'image/png'],
-    ['jpg', 'image/jpeg'],
-    ['jpeg', 'image/jpeg'],
-    ['svg', 'image/svg+xml'],
-  ]);
-
-  function resolveMime(input: string): string {
-    if (input.includes('/')) return input;
-    const key = input.startsWith('.') ? input.slice(1) : input;
-    return mimeMap.get(key.toLowerCase()) ?? 'application/octet-stream';
-  }
-
-  AerixRes.type = function (type: string): AerixResponse {
-    this.setHeader('Content-Type', resolveMime(type));
+  const setType = function (this: Response, type: Parameters<Response['type']>[0]): Response {
+    this.setHeader('Content-Type', resolveMime(String(type)));
     return this;
-  };
+  } as Response['type'];
+  BearnRes.type = setType;
+  BearnRes.contentType = setType as Response['contentType'];
 
-  AerixRes.contentType = function (type: string): AerixResponse {
-    this.setHeader('Content-Type', resolveMime(type));
-    return this;
-  };
-
-  AerixRes.redirect = function (url: string, status = 302): AerixResponse {
+  BearnRes.redirect = function (this: Response, a: string | number, b?: string | number): Response {
+    const isNumberFirst = typeof a === 'number';
+    const status = isNumberFirst ? a : typeof b === 'number' ? b : 302;
+    const url = isNumberFirst ? String(b ?? '') : String(a);
     this.statusCode = status;
     this.setHeader('Location', url);
     this.end();
     return this;
-  };
+  } as Response['redirect'];
 
-  const originalRedirect = AerixRes.redirect.bind(AerixRes);
-
-  AerixRes.redirect = function (this: AerixResponse, a: unknown, b?: unknown): AerixResponse {
-    if (typeof a === 'number' && typeof b === 'string') {
-      return originalRedirect(b, a);
-    }
-    return originalRedirect(String(a), 302);
-  } as AerixResponse['redirect'];
-
-  AerixRes.cookie = function (name: string, value: string, options?: CookieOptions): AerixResponse {
+  BearnRes.cookie = function (name: string, value: string, options?: CookieOptions): Response {
     const parts: string[] = [`${encodeURIComponent(name)}=${encodeURIComponent(value)}`];
     if (options?.httpOnly) parts.push('HttpOnly');
     if (options?.secure) parts.push('Secure');
     if (typeof options?.maxAge === 'number') parts.push(`Max-Age=${Math.floor(options.maxAge)}`);
+    if (options?.path) parts.push(`Path=${options.path}`);
+    if (options?.domain) parts.push(`Domain=${options.domain}`);
+    if (options?.sameSite) {
+      const s = options.sameSite;
+      const formatted = s === 'none' ? 'None' : s === 'lax' ? 'Lax' : 'Strict';
+      parts.push(`SameSite=${formatted}`);
+    }
 
     const existing = this.getHeader('Set-Cookie');
     const cookieString = parts.join('; ');
@@ -104,7 +145,7 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
     return this;
   };
 
-  AerixRes.clearCookie = function (name: string, _options?: CookieOptions): AerixResponse {
+  BearnRes.clearCookie = function (name: string, _options?: CookieOptions): Response {
     const expires = new Date(1).toUTCString();
     const cookieString = `${encodeURIComponent(name)}=; Expires=${expires}; Max-Age=0`;
     const existing = this.getHeader('Set-Cookie');
@@ -121,60 +162,65 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
   };
 
   // Header helpers: set/header/get/append/links/location/vary
-  AerixRes.set = function (
-    this: AerixResponse,
-    field: string | Record<string, string | string[]>,
-    value?: string | string[]
-  ): AerixResponse {
+  BearnRes.set = function (
+    this: Response,
+    field: Parameters<Response['set']>[0],
+    value?: Parameters<Response['set']>[1]
+  ): Response {
     if (typeof field === 'string') {
-      this.setHeader(field, value ?? '');
+      const v = (value ?? '') as string | string[] | number;
+      this.setHeader(field, v);
       return this;
     }
-    for (const [k, v] of Object.entries(field)) {
-      this.setHeader(k, v);
-    }
+    const obj = field as Record<string, string | number | string[]>;
+    for (const k in obj) this.setHeader(k, obj[k] ?? '');
     return this;
-  } as AerixResponse['set'];
+  } as Response['set'];
 
-  AerixRes.header = function (
-    this: AerixResponse,
-    field: string | Record<string, string | string[]>,
-    value?: string | string[]
-  ): AerixResponse {
-    return AerixRes.set.call(this, field as never, value as never);
-  } as AerixResponse['header'];
+  BearnRes.header = function (
+    this: Response,
+    field: Parameters<Response['header']>[0],
+    value?: Parameters<Response['header']>[1]
+  ): Response {
+    return BearnRes.set.call(this, field, value ?? '');
+  } as Response['header'];
 
-  AerixRes.get = function (this: AerixResponse, field: string): string | undefined {
+  BearnRes.get = function (this: Response, field: string): string | number | string[] | undefined {
     const val = this.getHeader(field);
-    if (Array.isArray(val)) return val.join(', ');
+    if (Array.isArray(val)) return val as unknown as string[];
+    if (typeof val === 'number') return val;
     return typeof val === 'string' ? val : undefined;
-  } as AerixResponse['get'];
+  } as Response['get'];
 
-  AerixRes.append = function (this: AerixResponse, field: string, value?: string[] | string): AerixResponse {
+  BearnRes.append = function (this: Response, field: string, value?: string[] | string | number): Response {
     const current = this.getHeader(field);
-    const next = Array.isArray(value) ? value : value !== undefined ? [value] : [];
+    const normalizedNext = Array.isArray(value)
+      ? value.map(v => String(v))
+      : value !== undefined
+        ? [String(value)]
+        : [];
     if (Array.isArray(current)) {
-      this.setHeader(field, [...current, ...next]);
+      this.setHeader(field, [...current, ...normalizedNext]);
     } else if (typeof current === 'string') {
-      this.setHeader(field, [current, ...next]);
+      this.setHeader(field, [current, ...normalizedNext]);
     } else {
-      this.setHeader(field, next);
+      this.setHeader(field, normalizedNext);
     }
     return this;
   };
 
-  AerixRes.links = function (this: AerixResponse, links: Record<string, string>): AerixResponse {
+  BearnRes.links = function (this: Response, links: Record<string, string>): Response {
     const segments = Object.entries(links).map(([rel, url]) => `<${url}>; rel="${rel}"`);
     this.setHeader('Link', segments.join(', '));
     return this;
   };
 
-  AerixRes.location = function (this: AerixResponse, url: string): AerixResponse {
+  BearnRes.location = function (this: Response, url: string): Response {
     this.setHeader('Location', url);
     return this;
   };
 
-  AerixRes.vary = function (this: AerixResponse, field: string): AerixResponse {
+  BearnRes.vary = function (this: Response, field: string): Response {
     const current = this.getHeader('Vary');
     const existing = typeof current === 'string' ? current.split(',') : Array.isArray(current) ? current : [];
     const set = new Set<string>();
@@ -202,7 +248,7 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
     return this;
   };
 
-  AerixRes.jsonp = function (this: AerixResponse, data: JsonValue): AerixResponse {
+  BearnRes.jsonp = function (this: Response, data: JsonValue): Response {
     const payload = JSON.stringify(data);
     const body = `callback(${payload});`;
     if (!this.hasHeader('Content-Type')) this.setHeader('Content-Type', 'application/javascript');
@@ -210,5 +256,5 @@ export function enhanceResponse(res: ServerResponse): AerixResponse {
     return this;
   };
 
-  return AerixRes;
+  return BearnRes;
 }

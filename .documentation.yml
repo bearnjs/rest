@@ -1,0 +1,21 @@
+toc:
+  - README.md
+  - docs/api.md
+
+formats:
+  - md
+
+github: true
+
+shallow: false
+
+source:
+  - src
+
+output: docs
+
+markdown:
+  gfm: true
+  hardwrap: false
+
+name: '@bearn/rest'

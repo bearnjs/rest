@@ -1,26 +1,28 @@
 export type * from './types';
 export * from './decorators';
 export { Router } from './routing/router';
-export { AerixApp as Aerix } from './core/app';
-export { AerixApp } from './core/app';
+export { BearnApp as Bearn } from './core/app';
+export { BearnApp } from './core/app';
 export { createCorsMiddleware } from './core/middlewares/cors';
+export * from './validation/zod';
 
-import { AerixApp } from './core/app';
+import { BearnApp } from './core/app';
 
 import type { AppOptions } from './types';
 
 /**
- * Creates a new Aerix REST application instance.
+ * Creates a new Bearn REST application instance.
  *
- * This is the recommended way to create a new Aerix application rather than
- * instantiating {@link AerixApp} directly.
+ * This is the recommended way to create a new Bearn application rather than
+ * instantiating {@link BearnApp} directly.
  *
  * @example
  * ```ts
- * import createApp from '@aerix/rest';
+ * import createApp from '@bearn/rest';
  *
  * const app = createApp({
  *   port: 3000,
+ *   host: 'localhost',
  *   cors: {
  *     origin: 'http://localhost:3000',
  *     methods: ['GET', 'POST'],
@@ -30,9 +32,9 @@ import type { AppOptions } from './types';
  * app.start();
  * ```
  *
- * @param options - Configuration options for the Aerix application
- * @returns A new configured Aerix application instance
+ * @param options - Configuration options for the Bearn application
+ * @returns A new configured Bearn application instance
  */
-export default function createApp(options?: AppOptions): AerixApp {
-  return new AerixApp(options);
+export default function createApp(options?: AppOptions): BearnApp {
+  return new BearnApp(options);
 }

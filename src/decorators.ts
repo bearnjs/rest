@@ -1,4 +1,5 @@
-import type { ControllerClass, RouteDefinition, RouteSchema, HttpMethod } from './types.js';
+/* eslint-disable prettier/prettier */
+import type { ControllerClass, RouteDefinition, RouteSchema, HttpMethod, Handler } from './types';
 
 /** @internal */
 interface ControllerRegistryItem {
@@ -25,7 +26,15 @@ export function Controller(basePath: string = ''): ClassDecorator {
 }
 
 /** @internal */
-type RouteOptions = string | { path?: string; schema?: RouteSchema };
+type RouteOptions =
+  | string
+  | {
+      path?: string;
+      /** The route schema metadata. */
+      schema?: RouteSchema;
+      /** Middleware(s) to run before the route handler */
+      middlewares?: Handler | Handler[];
+    };
 /**
  * Creates a method decorator for a given HTTP method.
  * @param method @type {HttpMethod} - The HTTP method to create a decorator for.
@@ -36,6 +45,7 @@ function createMethodDecorator(method: HttpMethod) {
     return (target, propertyKey) => {
       const path = typeof options === 'string' ? options : (options.path ?? '');
       const schema = typeof options === 'string' ? undefined : options.schema;
+      const middlewares = typeof options === 'string' ? undefined : options.middlewares;
       const ctor = target.constructor as ControllerClass;
       const existing = routesMeta.get(ctor) ?? [];
       existing.push({
@@ -43,6 +53,7 @@ function createMethodDecorator(method: HttpMethod) {
         path,
         propertyKey: propertyKey as string,
         ...(schema ? { schema } : {}),
+        ...(middlewares ? { middlewares: Array.isArray(middlewares) ? middlewares : [middlewares] } : {}),
       });
       routesMeta.set(ctor, existing);
     };

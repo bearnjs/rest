@@ -1,21 +1,21 @@
-# @aerix/rest
+# @bearn/rest
 
 A fast and lightweight HTTP framework built from scratch in TypeScript.
 
 ## Installation
 
 ```bash
-npm install @aerix/rest
+npm install @bearn/rest
 # or
-yarn add @aerix/rest
+yarn add @bearn/rest
 # or
-pnpm add @aerix/rest
+pnpm add @bearn/rest
 ```
 
 ## Quick Start
 
 ```typescript
-import createApp from '@aerix/rest';
+import createApp from '@bearn/rest';
 
 const app = createApp({
   port: 3000,
@@ -47,7 +47,7 @@ app.start();
 ### Creating an App
 
 ```typescript
-import createApp from '@aerix/rest';
+import createApp from '@bearn/rest';
 
 const app = createApp({
   port: 3000,
@@ -87,37 +87,37 @@ app.use((req, res, next) => {
 ### Decorator-based Controllers
 
 ```typescript
-import { Controller, Get, Post, Put, Delete } from '@aerix/rest';
-import type { AerixRequest, AerixResponse } from '@aerix/rest';
+import { Controller, Get, Post, Put, Delete } from '@bearn/rest';
+import type { Request, Response } from '@bearn/rest';
 
 @Controller('/users')
 class UserController {
   @Get('/')
-  getAllUsers(req: AerixRequest, res: AerixResponse) {
+  getAllUsers(req: Request, res: Response) {
     res.json({ users: [] });
   }
 
   @Get('/:id')
-  getUserById(req: AerixRequest, res: AerixResponse) {
+  getUserById(req: Request, res: Response) {
     const { id } = req.params;
     res.json({ id });
   }
 
   @Post('/')
-  createUser(req: AerixRequest, res: AerixResponse) {
+  createUser(req: Request, res: Response) {
     const user = req.body;
     res.status(201).json({ user });
   }
 
   @Put('/:id')
-  updateUser(req: AerixRequest, res: AerixResponse) {
+  updateUser(req: Request, res: Response) {
     const { id } = req.params;
     const updates = req.body;
     res.json({ id, updates });
   }
 
   @Delete('/:id')
-  deleteUser(req: AerixRequest, res: AerixResponse) {
+  deleteUser(req: Request, res: Response) {
     const { id } = req.params;
     res.status(204).send();
   }
