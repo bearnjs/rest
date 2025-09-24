@@ -53,6 +53,7 @@ export default [
       ".output/**",
       ".vite/**",
       "tsup.config.ts",
+      "examples/**",
     ],
   },
   js.configs.recommended,
