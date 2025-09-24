@@ -8,6 +8,7 @@ import type {
   RouteSchema,
   PathHandler,
   JsonValue,
+  RouterOptions,
 } from '../types';
 
 /** Lightweight HTTP router with middleware support. */
@@ -17,6 +18,24 @@ export class Router {
   private mountedRouters: Array<{ path?: string; router: Router }> = [];
   private routeMap = new Map<string, Route[]>();
   private middlewareCache = new Map<string, Handler[]>();
+  /** Optional base prefix used when this router is mounted without explicit path */
+  public readonly basePrefix: string | undefined;
+  /** Optional human-friendly name */
+  public readonly name: string | undefined;
+  /** Optional description for docs/printing */
+  public readonly description: string | undefined;
+
+  constructor(options?: RouterOptions) {
+    this.basePrefix = options?.prefix ? this.normalizePath(options.prefix) : undefined;
+    this.name = options?.name;
+    this.description = options?.description;
+    const preset: Handler[] = options && Array.isArray(options.middlewares) ? options.middlewares : [];
+    for (let i = 0; i < preset.length; i++) {
+      const handler = preset[i];
+      if (!handler) continue;
+      this.middlewares.push({ handler });
+    }
+  }
 
   /** Normalize a path by ensuring leading slash and removing trailing slash (except root) */
   private normalizePath(input: string): string {
@@ -32,19 +51,29 @@ export class Router {
    * @param pathOrHandler @type {string | Handler} - The path prefix or handler.
    */
   use(handler: Handler): void;
-  use(path: string, handler: Handler): void;
+  use<Path extends string>(path: Path, handler: Handler | PathHandler<Path>): void;
   use(path: string, router: Router): void;
   use(router: Router): void;
-  use(pathOrHandler: string | Handler | Router, handler?: Handler | Router): void {
+  use<Path extends string>(
+    pathOrHandler: Path | Handler | Router,
+    handler?: Handler | Router | PathHandler<Path>
+  ): void {
     if (typeof pathOrHandler === 'string' && handler) {
       const normalized = this.normalizePath(pathOrHandler);
+      const effectivePath = this.basePrefix ? this.normalizePath(`${this.basePrefix}${normalized}`) : normalized;
       if (handler instanceof Router) {
-        this.mountedRouters.push({ path: normalized, router: handler });
+        this.mountedRouters.push({ path: effectivePath, router: handler });
       } else {
-        this.middlewares.push({ path: normalized, handler });
+        this.middlewares.push({ path: effectivePath, handler: handler as Handler });
       }
     } else if (pathOrHandler instanceof Router) {
-      this.mountedRouters.push({ router: pathOrHandler });
+      // no explicit path provided; mount under this router's basePrefix if present
+      const effectivePath = this.basePrefix ?? undefined;
+      if (effectivePath) {
+        this.mountedRouters.push({ path: effectivePath, router: pathOrHandler });
+      } else {
+        this.mountedRouters.push({ router: pathOrHandler });
+      }
     } else {
       this.middlewares.push({ handler: pathOrHandler as Handler });
     }
@@ -67,7 +96,7 @@ export class Router {
   /** Registers a GET route.
    * @param path @type {string} - The path.
    * @param handler @type {Handler} - The handler.
-   *    * @param schema @type {RouteSchema} - The schema.
+   * @param schema @type {RouteSchema} - The schema.
    */
   get<Path extends string, TResponse extends JsonValue = JsonValue>(
     path: Path,
@@ -155,8 +184,8 @@ export class Router {
   /**
    * Registers a HEAD route.
    * @param path @type {string} - The path.
-   * @param handler @type {Handler} - The handler.
-   * @param schema @type {RouteSchema} - The schema.
+   * @param handler {@link Handler} - The handler.
+   * @param schema {@link RouteSchema} - The schema.
    */
   head<Path extends string, TResponse extends JsonValue = JsonValue>(
     path: Path,
@@ -174,8 +203,8 @@ export class Router {
   /**
    * Registers an OPTIONS route.
    * @param path @type {string} - The path.
-   * @param handler @type {Handler} - The handler.
-   * @param schema @type {RouteSchema} - The schema.
+   * @param handler {@link Handler} - The handler.
+   * @param schema {@link RouteSchema} - The schema.
    */
   options<Path extends string, TResponse extends JsonValue = JsonValue>(
     path: Path,
@@ -191,10 +220,10 @@ export class Router {
   }
 
   /** Adds a route to the router.
-   * @param method @type {HttpMethod} - The method.
+   * @param method {@link HttpMethod} - The method.
    * @param path @type {string} - The path.
-   * @param handler @type {Handler} - The handler.
-   * @param schema @type {RouteSchema} - The schema.
+   * @param handler {@link Handler} - The handler.
+   * @param schema {@link RouteSchema} - The schema.
    */
   private addRoute<Path extends string>(
     method: HttpMethod,
@@ -203,7 +232,8 @@ export class Router {
     schema?: RouteSchema,
     middlewares: Handler[] = []
   ): void {
-    const normalizedPath = this.normalizePath(path);
+    const localPath = this.normalizePath(path);
+    const normalizedPath = this.basePrefix ? this.normalizePath(`${this.basePrefix}${localPath}`) : localPath;
     const route: Route = { method, path: normalizedPath, handler, schema, middlewares };
 
     if (normalizedPath.includes(':')) {
@@ -226,8 +256,8 @@ export class Router {
   }
 
   /** Handles an incoming request by running middleware and matching routes.
-   * @param req @type {Request} - The request.
-   * @param res @type {Response} - The response.
+   * @param req {@link Request} - The request.
+   * @param res {@link Response} - The response.
    */
   async handle(req: Request, res: Response): Promise<void> {
     const method = req.method as HttpMethod;
@@ -288,8 +318,8 @@ export class Router {
 
   /** Handles a request for a mounted router.
    * @param mounted @type {{ path?: string; router: Router }} - The mounted router.
-   * @param req @type {Request} - The request.
-   * @param res @type {Response} - The response.
+   * @param req {@link Request} - The request.
+   * @param res {@link Response} - The response.
    * @param pathname @type {string} - The original pathname.
    */
   private async handleMountedRouter(
@@ -312,7 +342,6 @@ export class Router {
     try {
       await mounted.router.handle(req, res);
     } finally {
-      // Restore original path and URL
       if (originalPath !== undefined) {
         req.path = originalPath;
       }
@@ -324,7 +353,8 @@ export class Router {
 
   /** Gets applicable middleware for a given path with caching.
    * @param pathname @type {string} - The path to get middleware for.
-   * @returns @type {Handler[]} - The applicable middleware handlers.
+   * @returns @type {Handler[]}
+   * {@link Handler[]} - The applicable middleware handlers.
    */
   private getApplicableMiddleware(pathname: string): Handler[] {
     if (this.middlewareCache.has(pathname)) {
@@ -343,10 +373,10 @@ export class Router {
   }
 
   /** Executes a route.
-   * @param req @type {Request} - The request.
-   * @param res @type {Response} - The response.
-   * @param method @type {HttpMethod} - The method.
-   * @param pathname @type {string} - The pathname.
+   * @param req {@link Request} - The request.
+   * @param res {@link Response} - The response.
+   * @param method {@link HttpMethod} - The method.
+   * @param pathname {@link string} - The pathname.
    */
   private async executeRoute(req: Request, res: Response, method: HttpMethod, pathname: string): Promise<void> {
     const exactKey = `${method}:${pathname}`;
@@ -385,23 +415,16 @@ export class Router {
     // If no local route matches, check mounted routers
     for (const mounted of this.mountedRouters) {
       if (this.shouldHandleWithMountedRouter(mounted, pathname)) {
-        // For routers mounted at root path, delegate directly without checking routes
         if (!mounted.path) {
           return this.handleMountedRouter(mounted, req, res, pathname);
         }
-
-        // For routers mounted with path prefix, check if they have a route for this path
         const mountedRoutes = mounted.router.getRoutes();
         const adjustedPath = pathname.slice(mounted.path.length) || '/';
         const finalPath = this.normalizePath(adjustedPath);
 
         const hasRoute = mountedRoutes.some(route => {
           if (route.method !== method) return false;
-
-          // Check exact match with adjusted path
           if (route.path === finalPath) return true;
-
-          // Check regex match with adjusted path
           if (route.regex?.test(finalPath)) return true;
 
           return false;
@@ -464,28 +487,17 @@ export class Router {
    * @returns @type {boolean} - Whether the mounted router should handle this request.
    */
   private shouldHandleWithMountedRouter(mounted: { path?: string; router: Router }, pathname: string): boolean {
-    if (!mounted.path) {
-      // Router mounted without path prefix - handle all routes
-      return true;
-    }
-
-    // Router mounted with path prefix - check if path starts with the prefix
-    if (mounted.path === '/') {
-      // Special case: router mounted at root - handle all routes
-      return true;
-    }
-
-    if (pathname === mounted.path || pathname.startsWith(`${mounted.path}/`)) {
-      return true;
-    }
-
+    if (!mounted.path) return true;
+    if (mounted.path === '/') return true;
+    if (pathname === mounted.path) return true;
+    if (pathname.startsWith(`${mounted.path}/`)) return true;
     return false;
   }
 
   /** Executes a route handler with Promise handling.
-   * @param handler @type {Handler} - The handler to execute.
-   * @param req @type {Request} - The request.
-   * @param res @type {Response} - The response.
+   * @param handler {@link Handler} - The handler to execute.
+   * @param req {@link Request} - The request.
+   * @param res {@link Response} - The response.
    */
   private async executeHandler(handler: Handler, req: Request, res: Response): Promise<void> {
     return new Promise<void>((resolve, reject) => {
@@ -511,7 +523,9 @@ export class Router {
 
   /** Parses a query string.
    * @param url @type {string} - The URL.
-   * @returns @type {Record<string, string>} - The query parameters.
+   * @returns @type {Record<string, string>}
+   * {@link Record<string, string>} - The query parameters.
+   * {@link Record} - The query parameters.
    */
   private parseQuery(url?: string): Record<string, string> {
     if (!url) return {};
@@ -542,7 +556,7 @@ export class Router {
   }
 
   /** Handles an error.
-   * @param err @type {Error} - The error.
+   * @param err {@link Error} - The error.
    * @param req @type {Request} - The request.
    * @param res @type {Response} - The response.
    */
@@ -554,7 +568,9 @@ export class Router {
   }
 
   /** Returns a copy of all registered routes.
-   * @returns @type {Route[]} - The routes.
+   * @returns @type {Route[]}
+   * {@link Route[]} - The routes.
+   * {@link Route} - The routes.
    */
   getRoutes(): Route[] {
     const allRoutes = [...this.routes];

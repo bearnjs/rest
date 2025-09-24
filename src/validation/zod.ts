@@ -1,12 +1,4 @@
-import type {
-  ExtractPathParams,
-  Handler,
-  JsonValue,
-  NextFunction,
-  RouteHandler,
-  TypedRequest,
-  TypedResponse,
-} from '../types';
+import type { ExtractPathParams, Handler, JsonValue, NextFunction, RouteHandler, Request, Response } from '../types';
 
 // Minimal runtime contract for schema objects (Zod or compatible)
 type AnyZod = { parse: (input: unknown) => unknown };
@@ -31,21 +23,149 @@ export type InferParams<S extends SchemaSet> =
  * Validates cookie-safe, fast-fail with 400 and a structured error payload.
  */
 export function validate(schemas: SchemaSet): Handler {
-  return (req, res, next) => {
+  // Targeted coercion using Zod issues to convert string inputs into
+  // numbers/booleans when schema expects them.
+  const tryCoerceByIssues = (
+    input: unknown,
+    issues: Array<{
+      path: (string | number)[];
+      code?: string;
+      expected?: unknown;
+      received?: unknown;
+    }>
+  ): unknown => {
+    // Helper to set a value at a deep path on a cloned structure
+    const setDeep = (obj: unknown, path: (string | number)[], value: unknown): unknown => {
+      if (path.length === 0) return value;
+      if (obj === null || typeof obj !== 'object') return obj;
+      const cloned = Array.isArray(obj) ? obj.slice() : { ...(obj as Record<string, unknown>) };
+      const [head, ...tail] = path;
+      const key = head as keyof typeof cloned;
+      const current = (cloned as Record<string | number, unknown>)[key as string | number];
+      (cloned as Record<string | number, unknown>)[key as string | number] = setDeep(current, tail, value);
+      return cloned;
+    };
+
+    const coercePrimitive = (val: unknown, expected: unknown): unknown => {
+      if (typeof val === 'string') {
+        const exp = String(expected);
+        if (exp === 'number') {
+          if (val.trim() === '') return val;
+          const n = Number(val);
+          return Number.isFinite(n) ? n : val;
+        }
+        if (exp === 'boolean') {
+          const low = val.trim().toLowerCase();
+          if (low === 'true') return true;
+          if (low === 'false') return false;
+          return val;
+        }
+      }
+      return val;
+    };
+
+    let output = input;
+    for (const issue of issues) {
+      if (issue.code !== 'invalid_type') continue;
+      // toot value coercion
+      if (issue.path.length === 0) {
+        output = coercePrimitive(output, issue.expected);
+        continue;
+      }
+      // get current value at path
+      const getDeep = (obj: unknown, path: (string | number)[]): unknown => {
+        let cur: unknown = obj;
+        for (let j = 0; j < path.length; j++) {
+          const key = path[j] as never;
+          if (cur === null || typeof cur !== 'object') return undefined;
+          cur = (cur as Record<string | number, unknown>)[key as string | number];
+        }
+        return cur;
+      };
+      const currentVal = getDeep(output, issue.path);
+      const coerced = coercePrimitive(currentVal, issue.expected);
+      if (coerced !== currentVal) {
+        output = setDeep(output, issue.path, coerced);
+      }
+    }
+    return output;
+  };
+
+  return (req: Request, res: Response, next?: NextFunction) => {
     try {
       if (schemas.params) {
-        const parsed = schemas.params.parse(req.params ?? {});
-        req.params = parsed as Record<string, string>;
+        try {
+          const parsed = schemas.params.parse(req.params);
+          req.params = parsed as Record<string, string>;
+        } catch (err) {
+          const ze = err as {
+            issues?: Array<{
+              path: (string | number)[];
+              message: string;
+              code?: string;
+              expected?: unknown;
+              received?: unknown;
+            }>;
+          };
+          const issues = Array.isArray(ze.issues) ? ze.issues : [];
+          if (issues.length > 0) {
+            const coerced = tryCoerceByIssues(req.params, issues);
+            const parsed = schemas.params.parse(coerced);
+            req.params = parsed as Record<string, string>;
+          } else {
+            throw err;
+          }
+        }
       }
       if (schemas.query) {
-        const parsed = schemas.query.parse(req.query ?? {});
-        req.query = parsed as Record<string, string>;
+        try {
+          const parsed = schemas.query.parse(req.query);
+          req.query = parsed as Record<string, string>;
+        } catch (err) {
+          const ze = err as {
+            issues?: Array<{
+              path: (string | number)[];
+              message: string;
+              code?: string;
+              expected?: unknown;
+              received?: unknown;
+            }>;
+          };
+          const issues = Array.isArray(ze.issues) ? ze.issues : [];
+          if (issues.length > 0) {
+            const coerced = tryCoerceByIssues(req.query, issues);
+            const parsed = schemas.query.parse(coerced);
+            req.query = parsed as Record<string, string>;
+          } else {
+            throw err;
+          }
+        }
       }
       if (schemas.body) {
-        const parsed = schemas.body.parse(req.body ?? {});
-        req.body = parsed as JsonValue;
+        try {
+          const parsed = schemas.body.parse(req.body ?? {});
+          req.body = parsed as JsonValue;
+        } catch (err) {
+          const ze = err as {
+            issues?: Array<{
+              path: (string | number)[];
+              message: string;
+              code?: string;
+              expected?: unknown;
+              received?: unknown;
+            }>;
+          };
+          const issues = Array.isArray(ze.issues) ? ze.issues : [];
+          if (issues.length > 0) {
+            const coerced = tryCoerceByIssues(req.body ?? {}, issues);
+            const parsed = schemas.body.parse(coerced);
+            req.body = parsed as JsonValue;
+          } else {
+            throw err;
+          }
+        }
       }
-      next();
+      next?.();
     } catch (err) {
       if (err && typeof err === 'object' && 'issues' in (err as Record<string, unknown>)) {
         const ze = err as {
@@ -71,8 +191,8 @@ export function validate(schemas: SchemaSet): Handler {
 export function withValidation<TPath extends string, S extends SchemaSet, TResponse extends JsonValue = JsonValue>(
   schemas: S,
   handler: (
-    req: TypedRequest<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
-    res: TypedResponse<TResponse>,
+    req: Request<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
+    res: Response<TResponse>,
     next: NextFunction
   ) => void | Promise<void>
 ): RouteHandler<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>, TResponse> {
@@ -84,8 +204,8 @@ export function withValidation<TPath extends string, S extends SchemaSet, TRespo
         return;
       }
       const maybe = handler(
-        req as unknown as TypedRequest<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
-        res as unknown as TypedResponse<TResponse>,
+        req as unknown as Request<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
+        res as unknown as Response<TResponse>,
         next
       );
       if (maybe instanceof Promise) void maybe.catch(e => next(e instanceof Error ? e : new Error(String(e))));

@@ -7,8 +7,9 @@ export { createCorsMiddleware } from './core/middlewares/cors';
 export * from './validation/zod';
 
 import { BearnApp } from './core/app';
+import { Router } from './routing/router';
 
-import type { AppOptions } from './types';
+import type { AppOptions, RouterOptions } from './types';
 
 /**
  * Creates a new Bearn REST application instance.
@@ -32,9 +33,48 @@ import type { AppOptions } from './types';
  * app.start();
  * ```
  *
- * @param options - Configuration options for the Bearn application
+ * @param options {@link AppOptions} - Configuration options for the Bearn application
  * @returns A new configured Bearn application instance
  */
 export default function createApp(options?: AppOptions): BearnApp {
   return new BearnApp(options);
+}
+/**
+ * Creates a new Bearn router instance.
+ *
+ * @example
+ * ```ts
+ * import createRouter from '@bearn/rest';
+ *
+ * const router = createRouter();
+ * ```
+ *
+ * @example
+ * ```ts
+ * import createRouter from '@bearn/rest';
+ *
+ * const router = createRouter({
+ *   prefix: '/admin',
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * import createRouter from '@bearn/rest';
+ *
+ * const router = createRouter({
+ *   middlewares: [
+ *     (req, res, next) => {
+ *       console.log('Hello, world!');
+ *       next();
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @param options {@link RouterOptions} - Configuration options for the Bearn router
+ * @returns A new configured Bearn router instance
+ */
+export function createRouter(options?: RouterOptions): Router {
+  return new Router(options);
 }

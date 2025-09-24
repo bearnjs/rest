@@ -250,16 +250,20 @@ export type HTTPHeaders = Record<string, string | number> & {
  * Extends the base Node IncomingMessage with additional properties and methods.
  * @returns Request
  */
-export interface Request extends IncomingMessage {
+export interface Request<
+  TParams extends Record<string, string> = Record<string, string>,
+  TQuery extends Record<string, string> = Record<string, string>,
+  TBody extends JsonValue = JsonValue,
+> extends IncomingMessage {
   /** URL parameters parsed from route pattern
    * @returns URL parameters parsed from route pattern
    */
-  params?: Record<string, string>;
+  params: TParams;
 
   /** Query string parameters
    * @returns Query string parameters
    */
-  query?: Record<string, string>;
+  query: TQuery;
 
   /** HTTP method
    * @returns HTTP method
@@ -269,7 +273,7 @@ export interface Request extends IncomingMessage {
   /** Parsed request body
    * @returns Parsed request body
    */
-  body?: JsonValue | string | Buffer | Record<string, string>;
+  body?: TBody | string | Buffer | Record<string, string>;
 
   /** Request URL path
    * @returns Request URL path
@@ -392,48 +396,48 @@ export interface Request extends IncomingMessage {
  * Extends the base Node ServerResponse with additional methods.
  * @returns Response
  */
-export interface Response extends ServerResponse {
+export interface Response<TResponse extends JsonValue = JsonValue> extends ServerResponse {
   /**
    * Send a JSON response
    * @param data Data to send as JSON
    * @returns Response
    */
-  json(data: JsonValue): Response;
+  json(data: TResponse): Response<TResponse>;
 
   /**
    * Send a response
    * @param data Data to send
    * @returns Response
    */
-  send(data: string | Buffer): Response;
+  send(data: string | Buffer): Response<TResponse>;
 
   /**
    * Set response status code
    * @param code HTTP status code
    * @returns Response
    */
-  status(code: number): Response;
+  status(code: number): Response<TResponse>;
 
   /**
    * Send status code as response
    * @param code HTTP status code
    * @returns Response
    */
-  sendStatus(code: number): Response;
+  sendStatus(code: number): Response<TResponse>;
 
   /**
    * Set Content-Type header
    * @param type MIME type
    * @returns Response
    */
-  type(type: SetContentType | (string & {})): Response;
+  type(type: SetContentType | (string & {})): Response<TResponse>;
 
   /**
    * Set Content-Type header
    * @param type MIME type
    * @returns Response
    */
-  contentType(type: SetContentType | (string & {})): Response;
+  contentType(type: SetContentType | (string & {})): Response<TResponse>;
 
   /**
    * Redirect to URL
@@ -441,7 +445,7 @@ export interface Response extends ServerResponse {
    * @param status HTTP status code
    * @returns Response
    */
-  redirect(url: string, status?: number): Response;
+  redirect(url: string, status?: number): Response<TResponse>;
 
   /**
    * Set response header
@@ -449,9 +453,9 @@ export interface Response extends ServerResponse {
    * @param value Header value
    * @returns Response
    */
-  set(field: HTTPHeaders): Response;
-  set(field: string, value?: string | string[] | number): Response;
-  set<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response;
+  set(field: HTTPHeaders): Response<TResponse>;
+  set(field: string, value?: string | string[] | number): Response<TResponse>;
+  set<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response<TResponse>;
 
   /**
    * Set response header (alias for set())
@@ -459,9 +463,9 @@ export interface Response extends ServerResponse {
    * @param value Header value
    * @returns Response
    */
-  header(field: HTTPHeaders): Response;
-  header(field: string, value?: string | string[] | number): Response;
-  header<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response;
+  header(field: HTTPHeaders): Response<TResponse>;
+  header(field: string, value?: string | string[] | number): Response<TResponse>;
+  header<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response<TResponse>;
 
   /**
    * Get response header
@@ -477,36 +481,36 @@ export interface Response extends ServerResponse {
    * @param value Value to append
    * @returns Response
    */
-  append(field: string, value?: string[] | string | number): Response;
-  append<K extends keyof HTTPHeaders>(field: K, value?: HTTPHeaders[K]): Response;
+  append(field: string, value?: string[] | string | number): Response<TResponse>;
+  append<K extends keyof HTTPHeaders>(field: K, value?: HTTPHeaders[K]): Response<TResponse>;
 
   /**
    * Set Link headers
    * @param links Object of link relations
    * @returns Response
    */
-  links(links: Record<string, string>): Response;
+  links(links: Record<string, string>): Response<TResponse>;
 
   /**
    * Set Location header
    * @param url URL to set in Location header
    * @returns Response
    */
-  location(url: string): Response;
+  location(url: string): Response<TResponse>;
 
   /**
    * Add field to Vary header
    * @param field Header to vary on
    * @returns Response
    */
-  vary(field: string): Response;
+  vary(field: string): Response<TResponse>;
 
   /**
    * Send JSONP response
    * @param data Data to send as JSONP
    * @returns Response
    */
-  jsonp(data: JsonValue): Response;
+  jsonp(data: JsonValue): Response<TResponse>;
 
   /**
    * Set cookie
@@ -515,7 +519,7 @@ export interface Response extends ServerResponse {
    * @param options Cookie options
    * @returns Response
    */
-  cookie(name: string, value: string, options?: CookieOptions): Response;
+  cookie(name: string, value: string, options?: CookieOptions): Response<TResponse>;
 
   /**
    * Clear cookie
@@ -523,7 +527,7 @@ export interface Response extends ServerResponse {
    * @param options Cookie options
    * @returns Response
    */
-  clearCookie(name: string, options?: CookieOptions): Response;
+  clearCookie(name: string, options?: CookieOptions): Response<TResponse>;
 }
 
 /**
@@ -540,7 +544,20 @@ export type NextFunction = (err?: Error) => void;
  * @param next Next function
  * @returns Handler
  */
-export type Handler = (req: Request, res: Response, next: NextFunction) => void | Response | Promise<void | Response>;
+export type Handler<
+  TParams extends Record<string, string> = Record<string, string>,
+  TQuery extends Record<string, string> = Record<string, string>,
+  TBody extends JsonValue = JsonValue,
+  TRes extends JsonValue = JsonValue,
+> = {
+  (
+    req: Request<TParams, TQuery, TBody>,
+    res: Response<TRes>,
+    next?: NextFunction
+  ): void | Response<TRes> | Promise<void | Response<TRes>>;
+} & {
+  (req: Request, res: Response, next?: NextFunction): void | Response | Promise<void | Response>;
+};
 
 /**
  * Global error handler signature.
@@ -550,7 +567,16 @@ export type Handler = (req: Request, res: Response, next: NextFunction) => void 
  * @param next Next function
  * @returns ErrorHandler
  */
-export type ErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
+export type ErrorHandler<
+  TParams extends Record<string, string> = Record<string, string>,
+  TQuery extends Record<string, string> = Record<string, string>,
+  TBody extends JsonValue = JsonValue,
+  TRes extends JsonValue = JsonValue,
+> = {
+  (err: Error, req: Request<TParams, TQuery, TBody>, res: Response<TRes>, next?: NextFunction): void;
+} & {
+  (err: Error, req: Request, res: Response, next?: NextFunction): void;
+};
 
 /** HTTP method type */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
@@ -725,6 +751,11 @@ export interface AppOptions {
    * @returns The CORS configuration.
    */
   cors?: CorsOptions | false;
+  /**
+   * A global prefix to apply to all application routes.
+   * Example: '/api' prefixes every route.
+   */
+  rootPrefix?: string;
 }
 
 /** CORS configuration passed to the CORS middleware */
@@ -856,54 +887,7 @@ export interface RouteSchema {
   responses?: Record<string, { description?: string; content?: JsonValue }>;
 }
 
-/**
- * Strongly-typed request convenience for route authors
- * @param TParams The type of the URL parameters
- * @param TQuery The type of the query parameters
- * @param TBody The type of the request body
- * @param TResponse The type of the response
- * @returns @type {TypedRequest}
- */
-export type TypedRequest<
-  TParams extends Record<string, string> = Record<string, string>,
-  TQuery extends Record<string, string> = Record<string, string>,
-  TBody extends JsonValue = JsonValue,
-> = Omit<Request, 'params' | 'query' | 'body' | 'method'> & {
-  /**
-   * Typed URL parameters
-   * @returns The typed URL parameters.
-   */
-  params: TParams;
-  /**
-   * Typed query parameters
-   * @returns The typed query parameters.
-   */
-  query: TQuery;
-  /**
-   * HTTP method
-   * @returns The HTTP method.
-   */
-  method: HttpMethod | undefined;
-  /**
-   * Typed request body
-   * @returns The typed request body.
-   */
-  body: TBody;
-};
-
-/**
- * Strongly-typed response convenience for route authors
- * @param TResponse The type of the response
- * @returns @type {TypedResponse}
- */
-export type TypedResponse<TResponse extends JsonValue = JsonValue> = Omit<Response, 'json'> & {
-  /**
-   * Send typed JSON response
-   * @param data Response data
-   * @returns Response
-   */
-  json(data: TResponse): Response;
-};
+// TypedRequest/TypedResponse removed: use generic Request<TParams, TQuery, TBody> and Response<TRes> instead
 
 /**
  * Strongly-typed route handler signature
@@ -919,8 +903,8 @@ export type RouteHandler<
   TBody extends JsonValue = JsonValue,
   TResponse extends JsonValue = JsonValue,
 > = (
-  req: TypedRequest<TParams, TQuery, TBody>,
-  res: TypedResponse<TResponse>,
+  req: Request<TParams, TQuery, TBody>,
+  res: Response<TResponse>,
   next: NextFunction
 ) => void | Response | Promise<void | Response>;
 
@@ -944,5 +928,20 @@ export type ExtractPathParams<TPath extends string> = TPath extends `${infer _St
  * @returns @type {PathHandler}
  */
 export type PathHandler<TPath extends string, TResponse extends JsonValue = JsonValue> =
-  | Handler
+  | Handler<ExtractPathParams<TPath>, Record<string, string>, JsonValue, TResponse>
   | RouteHandler<ExtractPathParams<TPath>, Record<string, string>, JsonValue, TResponse>;
+
+/**
+ * Options for creating a Router via factory.
+ * Allows configuring a base prefix, pre-registered middlewares, and metadata.
+ */
+export interface RouterOptions {
+  /** Optional path prefix applied when the router is mounted without an explicit path */
+  prefix?: string;
+  /** Middlewares to register on the router upon creation */
+  middlewares?: Handler[];
+  /** Human-friendly name for tooling */
+  name?: string;
+  /** Description for docs/printing */
+  description?: string;
+}

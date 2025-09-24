@@ -9,7 +9,7 @@ import { enhanceRequest, parseBody } from '../http/request';
 import { enhanceResponse } from '../http/response';
 import { Router } from '../routing/router';
 
-import type { AppOptions, Request, Response, ErrorHandler, Handler, ListenInfo, Route } from '../types';
+import type { AppOptions, Request, Response, ErrorHandler, Handler, ListenInfo, Route, RouterOptions } from '../types';
 import type { Server } from 'http';
 
 /**
@@ -24,6 +24,7 @@ import type { Server } from 'http';
  *
  * const app = Bearn({
  *   port: 3000,
+ *   host: 'localhost',
  *   cors: {
  *     origin: 'http://localhost:3000',
  *     methods: ['GET', 'POST'],
@@ -33,7 +34,7 @@ import type { Server } from 'http';
  * app.start();
  * ```
  *
- * @param options - Configuration options for the Bearn application
+ * @param options {@link AppOptions} - Configuration options for the Bearn application
  * @returns A new configured Bearn application instance
  */
 export class BearnApp extends Router {
@@ -43,7 +44,7 @@ export class BearnApp extends Router {
   private appOptions: AppOptions = {};
 
   /** Registers a middleware.
-   * @param handler @type {Handler} - The middleware handler.
+   * @param handler {@link Handler} - The middleware handler.
    * @param path @type {string} - The path prefix.
    * @param pathOrHandler @type {string | Handler} - The path prefix or handler.
    */
@@ -58,10 +59,11 @@ export class BearnApp extends Router {
   /**
    * Creates a new Bearn application instance.
    * Pass {@link AppOptions} to customize listening, logging, and CORS.
-   * @param options @type {AppOptions} - The options for the Bearn application.
+   * @param options {@link AppOptions} - The options for the Bearn application.
    */
   constructor(options: AppOptions = {}) {
-    super();
+    const routerOptions: RouterOptions | undefined = options.rootPrefix ? { prefix: options.rootPrefix } : undefined;
+    super(routerOptions);
     this.appOptions = options;
     if (options.cors) {
       this.use(createCorsMiddleware(options.cors));
@@ -75,7 +77,7 @@ export class BearnApp extends Router {
    * Starts the HTTP server and begins handling requests.
    * Returns the underlying Node `Server` instance.
    * @param callback @type {(info: ListenInfo) => void} - The callback function to call when the server starts.
-   * @returns @type {Server} - The underlying Node `Server` instance.
+   * @returns {@link Server} - The underlying Node `Server` instance.
    */
   start(callback?: (info: ListenInfo) => void): Server {
     const { host: configHost, port = 8000, backlog, appName, appVersion } = this.appOptions;
@@ -85,8 +87,8 @@ export class BearnApp extends Router {
     else if (host === '[::1]') host = '::1';
 
     this.server = createServer((req, res) => {
-      const BearnReq = enhanceRequest(req) as Request;
-      const BearnRes = enhanceResponse(res) as Response;
+      const BearnReq = enhanceRequest(req);
+      const BearnRes = enhanceResponse(res);
 
       void (async () => {
         if (['POST', 'PUT', 'PATCH'].includes(req.method ?? '')) {
@@ -193,7 +195,7 @@ export class BearnApp extends Router {
   }
 
   /** Registers a global error handler invoked on uncaught route/middleware errors.
-   * @param handler @type {ErrorHandler} - The error handler function to register.
+   * @param handler {@link ErrorHandler} - The error handler function to register.
    * @returns @type {void} - The underlying Node `Server` instance.
    */
   onError(handler: ErrorHandler): void {

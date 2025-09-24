@@ -25,17 +25,14 @@ export function enhanceRequest(req: IncomingMessage): Request {
   BearnReq.get = getHeader;
   BearnReq.header = getHeader;
 
-  // URL properties
   if (typeof req.url === 'string') {
     BearnReq.originalUrl = req.url;
     BearnReq.path = req.url.split('?')[0] ?? '';
   }
 
-  // Protocol & security
   BearnReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
   BearnReq.secure = BearnReq.protocol === 'https';
 
-  // IP addresses
   if (typeof req.socket.remoteAddress === 'string') {
     BearnReq.ip = req.socket.remoteAddress;
   }
@@ -46,7 +43,6 @@ export function enhanceRequest(req: IncomingMessage): Request {
       ? forwardedFor.split(',').map(ip => ip.trim())
       : [];
 
-  // Host information
   const rawHost = req.headers['host'];
   const hostValues: string[] = Array.isArray(rawHost)
     ? rawHost.filter((v): v is string => typeof v === 'string')
@@ -61,14 +57,12 @@ export function enhanceRequest(req: IncomingMessage): Request {
     BearnReq.port = parseInt(portMatch[1] ?? '0', 10);
   }
 
-  // Request properties
   BearnReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
   BearnReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
   BearnReq.stale = true;
   BearnReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
   BearnReq.subdomains = BearnReq.hostname ? BearnReq.hostname.split('.').slice(0, -2) : [];
 
-  // Accept headers parsing (cached and optimized)
   const acceptsHeaderRaw = Array.isArray(req.headers.accept)
     ? req.headers.accept.join(',')
     : (req.headers.accept ?? '');
@@ -101,7 +95,6 @@ export function enhanceRequest(req: IncomingMessage): Request {
     return acceptsLanguageList;
   };
 
-  // Cookies parsing
   const cookieHeaderRaw = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
   if (cookieHeaderRaw) {
     const pairs = cookieHeaderRaw.split(';');
@@ -136,7 +129,6 @@ export async function parseBody(req: Request): Promise<void> {
       return;
     }
 
-    // Use Buffer for better performance than string concatenation
     const chunks: Buffer[] = [];
     let totalLength = 0;
 

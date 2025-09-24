@@ -1,4 +1,4 @@
-import type { Handler, CorsOptions } from '../../types';
+import type { Handler, CorsOptions, Request, Response, NextFunction } from '../../types';
 
 /**
  * Creates a CORS middleware using the provided options.
@@ -18,7 +18,7 @@ export function createCorsMiddleware(options: CorsOptions): Handler {
     staticHeaders['Access-Control-Max-Age'] = String(Math.max(0, Math.floor(cors.maxAgeSeconds)));
   }
 
-  return (req, res, next) => {
+  return (req: Request, res: Response, next?: NextFunction) => {
     const origin = req.headers['origin'];
     const originHeader: string | undefined = Array.isArray(origin) ? origin[0] : origin; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 
@@ -48,6 +48,6 @@ export function createCorsMiddleware(options: CorsOptions): Handler {
       return;
     }
 
-    next();
+    next?.();
   };
 }

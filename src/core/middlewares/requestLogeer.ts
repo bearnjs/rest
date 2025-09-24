@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import type { Request, Response, NextFunction } from '../../types';
 
-export function requestLogger(req: Request, res: Response, next: NextFunction) {
+export function requestLogger(req: Request, res: Response, next?: NextFunction) {
   const start = Date.now();
   const reset = '\x1b[0m';
   const bold = '\x1b[1m';
@@ -39,14 +40,14 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     // eslint-disable-next-line no-console
     console.log(
       `[${timestamp}] ` +
-        `${methodColor}${method.padEnd(6)}${reset}` + // eslint-disable-line
+        `${methodColor}${method.padEnd(6)}${reset}` +
         `${bold}${req.path ?? ''}${reset}  ` +
-        `${statusColor}${status}${reset} ` + // eslint-disable-line
+        `${statusColor}${status}${reset} ` +
         `${bold}${duration}ms${reset}`
     );
   });
 
-  next();
+  next?.();
 }
 
 export default requestLogger;
