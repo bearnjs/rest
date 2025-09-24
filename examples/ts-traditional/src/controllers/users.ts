@@ -1,26 +1,19 @@
 import { Request, Response } from '@bearn/rest';
 
-let users = <{ id: string, name: string }[]>[
-    { id: '1', name: 'John Doe' },
-    { id: '2', name: 'Jane Doe' },
-    { id: '3', name: 'John Smith' },
-    { id: '4', name: 'Jane Smith' }
+let users = <{ id: number, name: string }[]>[
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Doe' },
+    { id: 3, name: 'John Smith' },
+    { id: 4, name: 'Jane Smith' }
 ];
 
 export async function createUser(
-    req: Request<{ id: string }, {}, { name: string }>,
+    req: Request<{}, {}, { name: string }>,
     res: Response
 ) {
-    try {
-        const { id } = req.params;
-        const { name } = req.body;
-
-        users.push({ id, name });
-
-        res.json({ id, name });
-    } catch (e) {
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    const { name } = req.body!;
+    users.push({ id: users.length + 1, name });
+    res.json({ id: users.length + 1, name });
 }
 
 export async function getUsers(

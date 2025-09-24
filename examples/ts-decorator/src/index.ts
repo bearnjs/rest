@@ -1,5 +1,5 @@
 import createApp, { Request, Response } from "@bearn/rest";
-import { usersRouter } from "./routes/users";
+import "./controllers/users";
 
 const app = createApp({
   host: "0.0.0.0",
@@ -15,7 +15,5 @@ const app = createApp({
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ message: "OK" });
 });
-
-app.use(usersRouter);
 
 app.start();

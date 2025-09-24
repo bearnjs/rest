@@ -1,7 +1,7 @@
 {
     "name": "example-project",
     "version": "1.0.0",
-    "description": "Example project using the @bearn/rest traditional approach",
+    "description": "Example project using the @bearn/rest decorator",
     "license": "MIT",
     "main": "dist/index.js",
     "scripts": {

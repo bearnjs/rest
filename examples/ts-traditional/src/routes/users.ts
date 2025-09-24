@@ -5,8 +5,7 @@ import { createUser, getUsers } from "../controllers/users";
 export const usersRouter = createRouter({ prefix: "/users" });
 
 usersRouter.post("/", validate({
-    params: z.object({ id: z.uuid() }),
-    body: z.object({ name: z.string().max(2) })
+    body: z.object({ name: z.string() })
 }), createUser as Handler);
 
 usersRouter.get("/", validate({
