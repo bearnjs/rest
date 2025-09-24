@@ -273,7 +273,7 @@ export interface Request<
   /** Parsed request body
    * @returns Parsed request body
    */
-  body?: TBody | string | Buffer | Record<string, string>;
+  body?: TBody;
 
   /** Request URL path
    * @returns Request URL path

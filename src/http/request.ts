@@ -149,14 +149,18 @@ export async function parseBody(req: Request): Promise<void> {
         const body = Buffer.concat(chunks).toString();
         const contentType = req.headers['content-type'];
 
+        const setBody = (val: unknown) => {
+          Reflect.set(req as object, 'body', val);
+        };
+
         if (contentType?.includes('application/json')) {
-          req.body = body ? (JSON.parse(body) as JsonValue) : {};
+          setBody(body ? (JSON.parse(body) as JsonValue) : {});
         } else if (contentType?.includes('application/x-www-form-urlencoded')) {
-          req.body = parseUrlEncoded(body);
+          setBody(parseUrlEncoded(body));
         } else if (contentType?.includes('multipart/form-data')) {
-          req.body = body;
+          setBody(body);
         } else {
-          req.body = body;
+          setBody(body);
         }
         req.rawBody = body;
         resolve();

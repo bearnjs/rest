@@ -1,4 +1,4 @@
-import type { ExtractPathParams, Handler, JsonValue, NextFunction, RouteHandler, Request, Response } from '../types';
+import type { Handler, JsonValue, NextFunction, Request, Response } from '../types';
 
 // Minimal runtime contract for schema objects (Zod or compatible)
 type AnyZod = { parse: (input: unknown) => unknown };
@@ -144,7 +144,7 @@ export function validate(schemas: SchemaSet): Handler {
       if (schemas.body) {
         try {
           const parsed = schemas.body.parse(req.body ?? {});
-          req.body = parsed as JsonValue;
+          Reflect.set(req as object, 'body', parsed);
         } catch (err) {
           const ze = err as {
             issues?: Array<{
@@ -159,7 +159,7 @@ export function validate(schemas: SchemaSet): Handler {
           if (issues.length > 0) {
             const coerced = tryCoerceByIssues(req.body ?? {}, issues);
             const parsed = schemas.body.parse(coerced);
-            req.body = parsed as JsonValue;
+            Reflect.set(req as object, 'body', parsed);
           } else {
             throw err;
           }
@@ -181,34 +181,5 @@ export function validate(schemas: SchemaSet): Handler {
       }
       res.status(400).json({ error: 'ValidationError', message: (err as Error).message } as unknown as JsonValue);
     }
-  };
-}
-
-/**
- * Wrap a route handler with Zod validation and strong typing.
- * Returns a typed RouteHandler compatible with Router methods.
- */
-export function withValidation<TPath extends string, S extends SchemaSet, TResponse extends JsonValue = JsonValue>(
-  schemas: S,
-  handler: (
-    req: Request<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
-    res: Response<TResponse>,
-    next: NextFunction
-  ) => void | Promise<void>
-): RouteHandler<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>, TResponse> {
-  const mw = validate(schemas);
-  return (req, res, next) => {
-    void mw(req as unknown as never, res as unknown as never, (err?: Error) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      const maybe = handler(
-        req as unknown as Request<InferParams<S> & ExtractPathParams<TPath>, InferQuery<S>, InferBody<S>>,
-        res as unknown as Response<TResponse>,
-        next
-      );
-      if (maybe instanceof Promise) void maybe.catch(e => next(e instanceof Error ? e : new Error(String(e))));
-    });
   };
 }
