@@ -1,21 +1,21 @@
-# @bearn/rest
+# @bearnjs/rest
 
 A fast and lightweight HTTP framework built from scratch in TypeScript.
 
 ## Installation
 
 ```bash
-npm install @bearn/rest
+npm install @bearnjs/rest
 # or
-yarn add @bearn/rest
+yarn add @bearnjs/rest
 # or
-pnpm add @bearn/rest
+pnpm add @bearnjs/rest
 ```
 
 ## Quick Start
 
 ```typescript
-import createApp from '@bearn/rest';
+import createApp from '@bearnjs/rest';
 
 const app = createApp({
   port: 3000,
@@ -47,7 +47,7 @@ app.start();
 ### Creating an App
 
 ```typescript
-import createApp from '@bearn/rest';
+import createApp from '@bearnjs/rest';
 
 const app = createApp({
   port: 3000,
@@ -87,8 +87,8 @@ app.use((req, res, next) => {
 ### Decorator-based Controllers
 
 ```typescript
-import { Controller, Get, Post, Put, Delete } from '@bearn/rest';
-import type { Request, Response } from '@bearn/rest';
+import { Controller, Get, Post, Put, Delete } from '@bearnjs/rest';
+import type { Request, Response } from '@bearnjs/rest';
 
 @Controller('/users')
 class UserController {

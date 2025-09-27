@@ -1,4 +1,4 @@
-import { Request, Response } from '@bearn/rest';
+import { Request, Response } from '@bearnjs/rest';
 
 let users = <{ id: number, name: string }[]>[
     { id: 1, name: 'John Doe' },

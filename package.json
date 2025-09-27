@@ -1,5 +1,5 @@
 {
-  "name": "@bearn/rest",
+  "name": "@bearnjs/rest",
   "version": "0.1.5",
   "description": "A fast and lightweight HTTP framework built from scratch in TypeScript",
   "type": "module",
@@ -52,21 +52,27 @@
       ]
     }
   },
-  "author": "himonshuuu",
-  "license": "MIT",
+  "contributors": [
+    {
+      "name": "himonshuuu",
+      "email": "mail@himonshuuu.co",
+      "url": "https://himonshuuu.co"
+    }
+  ],
+  "license": "GPL-3.0",
   "keywords": [
     "http",
     "api",
     "framework",
     "typescript"
   ],
-  "homepage": "https://github.com/himonshuuu/bearn-rest#readme",
+  "homepage": "https://bearnjs.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/himonshuuu/bearn-rest.git"
+    "url": "git+https://github.com/bearnjs/rest.git"
   },
   "bugs": {
-    "url": "https://github.com/himonshuuu/bearn-rest/issues"
+    "url": "https://github.com/bearnjs/rest/issues"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -84,7 +90,7 @@
     "format:write": "prettier --write .",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
