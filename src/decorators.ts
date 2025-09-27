@@ -17,10 +17,13 @@ interface ControllerRegistryItem {
 
 /** @type {ControllerRegistryItem[]} The list of registered controllers. */
 const controllers: ControllerRegistryItem[] = [];
+
 /** @type {WeakMap<ControllerClass, { basePath: string }>} Metadata for controllers. */
 const controllerMeta = new WeakMap<ControllerClass, { basePath: string }>();
+
 /** @type {WeakMap<ControllerClass, RouteDefinition[]>} Metadata for routes. */
 const routesMeta = new WeakMap<ControllerClass, RouteDefinition[]>();
+
 /** @type {ControllerClass[]} List of controller constructors. */
 const controllerCtors: ControllerClass[] = [];
 

@@ -1,4 +1,4 @@
-import createApp, { Request, Response } from "@bearn/rest";
+import createApp, { Request, Response } from "@bearnjs/rest";
 import { usersRouter } from "./routes/users";
 
 const app = createApp({

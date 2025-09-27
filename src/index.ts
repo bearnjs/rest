@@ -16,7 +16,7 @@ import type { AppOptions, RouterOptions } from './types';
  *
  * @example
  * ```ts
- * import createApp from '@bearn/rest';
+ * import createApp from '@bearnjs/rest';
  *
  * const app = createApp({
  *   port: 3000,
@@ -42,14 +42,14 @@ export default function createApp(options?: AppOptions): BearnApp {
  *
  * @example
  * ```ts
- * import createRouter from '@bearn/rest';
+ * import createRouter from '@bearnjs/rest';
  *
  * const router = createRouter();
  * ```
  *
  * @example
  * ```ts
- * import createRouter from '@bearn/rest';
+ * import createRouter from '@bearnjs/rest';
  *
  * const router = createRouter({
  *   prefix: '/admin',
@@ -58,7 +58,7 @@ export default function createApp(options?: AppOptions): BearnApp {
  *
  * @example
  * ```ts
- * import createRouter from '@bearn/rest';
+ * import createRouter from '@bearnjs/rest';
  *
  * const router = createRouter({
  *   middlewares: [

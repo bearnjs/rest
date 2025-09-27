@@ -1,7 +1,7 @@
 {
     "name": "example-project",
     "version": "1.0.0",
-    "description": "Example project using the @bearn/rest decorator",
+    "description": "Example project using the @bearnjs/rest decorator",
     "license": "MIT",
     "main": "dist/index.js",
     "scripts": {
@@ -15,7 +15,7 @@
         "typescript": "^5.9.2"
     },
     "dependencies": {
-        "@bearn/rest": "0.1.3",
+        "@bearnjs/rest": "0.1.3",
         "zod": "^4.1.11"
     }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Request, Response, validate } from '@bearn/rest';
+import { Controller, Post, Get, Request, Response, validate } from '@bearnjs/rest';
 import { z } from 'zod';
 
 @Controller('/users')

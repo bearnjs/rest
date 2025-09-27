@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@bearn/rest':
+      '@bearnjs/rest':
         specifier: 0.1.3
         version: 0.1.3
       zod:
@@ -24,7 +24,7 @@ importers:
 
 packages:
 
-  '@bearn/rest@0.1.3':
+  '@bearnjs/rest@0.1.3':
     resolution: {integrity: sha512-2tCo9rj0uMwHulTK0xBWfAXqUfUGwEkTuAy4QTR1fCtXolT8u2kFKE0KS604xT7RM7D2/BCO2zPq24K2cjQNzA==}
     engines: {node: '>=20.0.0'}
 
@@ -215,7 +215,7 @@ packages:
 
 snapshots:
 
-  '@bearn/rest@0.1.3':
+  '@bearnjs/rest@0.1.3':
     dependencies:
       zod: 4.1.11
 
