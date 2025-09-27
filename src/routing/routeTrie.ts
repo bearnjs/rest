@@ -68,7 +68,7 @@ export interface TrieSearchResult {
 
 /**
  * @class
- * @classdesc A Trie-based structure for matching routes efficiently. It provides O(m) performance, where m is the number of segments in the URL.
+ * A Trie-based structure for matching routes efficiently. It provides O(m) performance, where m is the number of segments in the URL.
  */
 export class RouteTrie {
   /**
@@ -79,7 +79,6 @@ export class RouteTrie {
   private methodTries = new Map<HttpMethod, TrieNode>();
 
   /**
-   * @constructs
    * Initializes the RouteTrie with root nodes for each HTTP method.
    */
   constructor() {

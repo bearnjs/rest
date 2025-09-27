@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from '../../types';
 
 /**
  * @function requestLogger
- * @description Logs information about the incoming request, including method, path, status, and duration.
+ * Logs information about the incoming request, including method, path, status, and duration.
  * @param {Request} req - The incoming request object.
  * @param {Response} res - The response object.
  * @param {NextFunction} [next] - The next function in the middleware chain.

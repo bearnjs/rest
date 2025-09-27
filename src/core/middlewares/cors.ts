@@ -2,7 +2,7 @@ import type { Handler, CorsOptions, Request, Response, NextFunction } from '../.
 
 /**
  * @function createCorsMiddleware
- * @description This function generates a middleware for handling Cross-Origin Resource Sharing (CORS) requests.
+ * This function generates a middleware for handling Cross-Origin Resource Sharing (CORS) requests.
  * It sets the necessary CORS headers and manages preflight requests.
  *
  * @param {CorsOptions} options - Configuration options for the CORS middleware, including allowed methods, headers, and origins.

@@ -3,7 +3,7 @@ import type { ControllerClass, RouteDefinition, RouteSchema, HttpMethod, Handler
 
 /**
  * @interface
- * @description Represents an item in the controller registry.
+ * Represents an item in the controller registry.
  * @private
  */
 interface ControllerRegistryItem {
@@ -25,8 +25,7 @@ const routesMeta = new WeakMap<ControllerClass, RouteDefinition[]>();
 const controllerCtors: ControllerClass[] = [];
 
 /**
- * @function
- * @description Decorator to mark a class as a controller and set a base path.
+ * Decorator to mark a class as a controller and set a base path.
  * @param {string} [basePath=''] - The base path for the controller.
  * @returns {ClassDecorator} The decorator for the controller.
  */
@@ -53,8 +52,7 @@ type RouteOptions =
     };
 
 /**
- * @function
- * @description Creates a method decorator for a given HTTP method.
+ * Creates a method decorator for a given HTTP method.
  * @param {HttpMethod} method - The HTTP method to create a decorator for.
  * @returns {MethodDecorator} The decorator for the HTTP method.
  */
@@ -79,48 +77,42 @@ function createMethodDecorator(method: HttpMethod) {
 }
 
 /**
- * @function
- * @description Decorator for GET requests.
+ * Decorator for GET requests.
  * @param {RouteOptions} options - The options for the GET request.
  * @returns {MethodDecorator} The decorator for the GET request.
  */
 export const Get = createMethodDecorator('GET');
 
 /**
- * @function
- * @description Decorator for POST requests.
+ * Decorator for POST requests.
  * @param {RouteOptions} options - The options for the POST request.
  * @returns {MethodDecorator} The decorator for the POST request.
  */
 export const Post = createMethodDecorator('POST');
 
 /**
- * @function
- * @description Decorator for PUT requests.
+ * Decorator for PUT requests.
  * @param {RouteOptions} options - The options for the PUT request.
  * @returns {MethodDecorator} The decorator for the PUT request.
  */
 export const Put = createMethodDecorator('PUT');
 
 /**
- * @function
- * @description Decorator for PATCH requests.
+ * Decorator for PATCH requests.
  * @param {RouteOptions} options - The options for the PATCH request.
  * @returns {MethodDecorator} The decorator for the PATCH request.
  */
 export const Patch = createMethodDecorator('PATCH');
 
 /**
- * @function
- * @description Decorator for DELETE requests.
+ * Decorator for DELETE requests.
  * @param {RouteOptions} options - The options for the DELETE request.
  * @returns {MethodDecorator} The decorator for the DELETE request.
  */
 export const Delete = createMethodDecorator('DELETE');
 
 /**
- * @function
- * @description Decorator factory for custom HTTP methods.
+ * Decorator factory for custom HTTP methods.
  * @param {HttpMethod} method - The HTTP method to create a decorator for.
  * @returns {MethodDecorator} The decorator for the custom HTTP method.
  */
@@ -129,8 +121,7 @@ export function Custom(method: HttpMethod) {
 }
 
 /**
- * @function
- * @description Returns the list of controllers materialized from decorator metadata.
+ * Returns the list of controllers materialized from decorator metadata.
  * This is built only once and cached.
  * @returns {ControllerRegistryItem[]} The list of controllers.
  */

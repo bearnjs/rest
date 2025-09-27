@@ -128,7 +128,6 @@ export function enhanceRequest(req: IncomingMessage): Request {
 /**
  * Parses the body of a request based on its Content-Type header.
  *
- * @async
  * @function
  * @param {Request} req - The request object whose body needs to be parsed.
  * @returns {Promise<void>} A promise that resolves when the body is successfully parsed.

@@ -2,7 +2,7 @@ import type { ListenInfo, Route } from '../types';
 
 /**
  * @function printStartupLog
- * @description Logs a startup summary for the server, including listen URLs and routes, in a human-readable format.
+ * Logs a startup summary for the server, including listen URLs and routes, in a human-readable format.
  * @param {ListenInfo} info - Contains server information such as addresses and port.
  * @param {Route[]} routes - An array of route objects, each containing a method and path.
  * @param {Object} options - Configuration options for logging.

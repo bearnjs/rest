@@ -16,7 +16,7 @@ import type {
 } from '../types';
 
 /**
- * @description Configuration for a router mounted at a specific path.
+ * Configuration for a router mounted at a specific path.
  */
 interface MountedRouter {
   /** The path where the router is mounted. */
@@ -26,8 +26,7 @@ interface MountedRouter {
 }
 
 /**
- * @class
- * @classdesc Manages routes and middleware in an application.
+ * Manages routes and middleware in an application.
  */
 export class RouterCore {
   private routes: Route[] = [];
@@ -44,7 +43,6 @@ export class RouterCore {
   public readonly description: string | undefined;
 
   /**
-   * @constructs
    * @param {RouterOptions} [options] - Configuration options for the router.
    */
   constructor(options?: RouterOptions) {
@@ -61,8 +59,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers middleware or mounts a router at a specific path or globally.
+   * Registers middleware or mounts a router at a specific path or globally.
    * @param {Path | Handler | RouterCore} pathOrHandler - The path or handler to register.
    * @param {Handler | RouterCore | PathHandler<Path>} [handler] - The handler or router to register.
    */
@@ -95,8 +92,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description An alias for the `use` method to register middleware.
+   * An alias for the `use` method to register middleware.
    * @param {string | Handler} pathOrHandler - The path or handler to register.
    * @param {Handler} [handler] - The handler to register.
    */
@@ -107,8 +103,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description An alias for the `use` method to mount a router.
+   * An alias for the `use` method to mount a router.
    * @param {string | RouterCore} pathOrRouter - The path or router to mount.
    * @param {RouterCore} [router] - The router to mount.
    */
@@ -119,8 +114,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a GET route with optional middleware and schema.
+   * Registers a GET route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -138,8 +132,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a POST route with optional middleware and schema.
+   * Registers a POST route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -156,8 +149,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a PUT route with optional middleware and schema.
+   * Registers a PUT route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -175,8 +167,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a DELETE route with optional middleware and schema.
+   * Registers a DELETE route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -194,8 +185,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a PATCH route with optional middleware and schema.
+   * Registers a PATCH route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -213,8 +203,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers a HEAD route with optional middleware and schema.
+   * Registers a HEAD route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -232,8 +221,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Registers an OPTIONS route with optional middleware and schema.
+   * Registers an OPTIONS route with optional middleware and schema.
    * @param {string} path - The path for the route.
    * @param {...Handler[]} handlers - The handlers and optional schema for the route.
    */
@@ -251,8 +239,7 @@ export class RouterCore {
   }
 
   /**
-   * @function
-   * @description Adds a new route to the router.
+   * Adds a new route to the router.
    * @param {HttpMethod} method - The HTTP method for the route.
    * @param {string} path - The path for the route.
    * @param {Handler} handler - The handler function for the route.
@@ -293,9 +280,8 @@ export class RouterCore {
   }
 
   /**
-   * @async
    * @function
-   * @description Handles an incoming request by executing middleware and matching routes.
+   * Handles an incoming request by executing middleware and matching routes.
    * @param {Request} req - The incoming request object.
    * @param {Response} res - The response object to send data back to the client.
    * @returns {Promise<void>}
@@ -314,9 +300,8 @@ export class RouterCore {
   }
 
   /**
-   * @async
    * @function
-   * @description Executes a matched route.
+   * Executes a matched route.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    * @param {HttpMethod} method - The HTTP method of the request.
@@ -367,9 +352,8 @@ export class RouterCore {
   }
 
   /**
-   * @async
    * @function
-   * @description Handles a request for a router that is mounted at a specific path.
+   * Handles a request for a router that is mounted at a specific path.
    * @param {MountedRouter} mounted - The mounted router configuration.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
@@ -407,7 +391,7 @@ export class RouterCore {
 
   /**
    * @function
-   * @description Retrieves a list of all registered routes, including those from mounted routers.
+   * Retrieves a list of all registered routes, including those from mounted routers.
    * @returns {Route[]} An array of all routes.
    */
   getRoutes(): Route[] {

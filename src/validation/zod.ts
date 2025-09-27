@@ -5,7 +5,7 @@ type AnyZod = { parse: (input: unknown) => unknown };
 
 /**
  * @typedef {Object} SchemaSet
- * @description Schema bag for validating different request parts.
+ * Schema bag for validating different request parts.
  * @template TBody
  * @template TQuery
  * @template TParams
@@ -26,7 +26,7 @@ export type SchemaSet<TBody = JsonValue, TQuery = Record<string, string>, TParam
 
 /**
  * @typedef {JsonValue} InferBody
- * @description Infers the type of the request body from the schema set.
+ * Infers the type of the request body from the schema set.
  * @template S
  * @param {SchemaSet} S - The schema set to infer from.
  * @returns {JsonValue} The inferred type of the request body.
@@ -35,7 +35,7 @@ export type InferBody<S extends SchemaSet> = S extends SchemaSet<infer TB, unkno
 
 /**
  * @typedef {Record<string, string>} InferQuery
- * @description Infers the type of the query parameters from the schema set.
+ * Infers the type of the query parameters from the schema set.
  * @template S
  * @param {SchemaSet} S - The schema set to infer from.
  * @returns {Record<string, string>} The inferred type of the query parameters.
@@ -45,7 +45,7 @@ export type InferQuery<S extends SchemaSet> =
 
 /**
  * @typedef {Record<string, string>} InferParams
- * @description Infers the type of the URL parameters from the schema set.
+ * Infers the type of the URL parameters from the schema set.
  * @template S
  * @param {SchemaSet} S - The schema set to infer from.
  * @returns {Record<string, string>} The inferred type of the URL parameters.
@@ -54,15 +54,14 @@ export type InferParams<S extends SchemaSet> =
   S extends SchemaSet<unknown, unknown, infer TP> ? TP : Record<string, string>;
 
 /**
- * @function validate
- * @description Create a validation middleware for the given schemas. Validates cookie-safe, fast-fail with 400 and a structured error payload.
+ * Create a validation middleware for the given schemas. Validates cookie-safe, fast-fail with 400 and a structured error payload.
  * @param {SchemaSet} schemas - The set of schemas to validate against.
  * @returns {Handler} The middleware handler function.
  */
 export function validate(schemas: SchemaSet): Handler {
   /**
    * @function tryCoerceByIssues
-   * @description Attempts to coerce input values based on validation issues.
+   * Attempts to coerce input values based on validation issues.
    * @param {unknown} input - The input data to be coerced.
    * @param {Array<Object>} issues - The list of issues encountered during validation.
    * @returns {unknown} The coerced input data.
@@ -78,7 +77,7 @@ export function validate(schemas: SchemaSet): Handler {
   ): unknown => {
     /**
      * @function setDeep
-     * @description Helper to set a value at a deep path on a cloned structure.
+     * Helper to set a value at a deep path on a cloned structure.
      * @param {unknown} obj - The object to set the value on.
      * @param {Array<string|number>} path - The path to set the value at.
      * @param {unknown} value - The value to set.
@@ -97,7 +96,7 @@ export function validate(schemas: SchemaSet): Handler {
 
     /**
      * @function coercePrimitive
-     * @description Coerces a primitive value to the expected type.
+     * Coerces a primitive value to the expected type.
      * @param {unknown} val - The value to coerce.
      * @param {unknown} expected - The expected type.
      * @returns {unknown} The coerced value.
@@ -130,7 +129,7 @@ export function validate(schemas: SchemaSet): Handler {
       }
       /**
        * @function getDeep
-       * @description Retrieves the current value at a specified path.
+       * Retrieves the current value at a specified path.
        * @param {unknown} obj - The object to retrieve the value from.
        * @param {Array<string|number>} path - The path to retrieve the value from.
        * @returns {unknown} The value at the specified path.

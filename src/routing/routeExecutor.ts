@@ -2,13 +2,12 @@ import type { Request, Response, Handler, NextFunction, Route } from '../types';
 
 /**
  * @class RouteExecutor
- * @classdesc This class is responsible for executing route handlers with support for middleware.
+ * This class is responsible for executing route handlers with support for middleware.
  */
 export class RouteExecutor {
   /**
    * @function executeRouteWithMiddlewares
-   * @description Executes the middlewares associated with a route, followed by the route handler.
-   * @async
+   * Executes the middlewares associated with a route, followed by the route handler.
    * @static
    * @param {Route} route - The route object containing the handler and middlewares.
    * @param {Request} req - The HTTP request object.
@@ -25,7 +24,7 @@ export class RouteExecutor {
     return new Promise<void>((resolve, reject) => {
       /**
        * @function runNext
-       * @description Executes the next middleware in the chain or the route handler if all middlewares have been executed.
+       * Executes the next middleware in the chain or the route handler if all middlewares have been executed.
        * @param {Error} [err] - An optional error that may have occurred in a previous middleware.
        */
       const runNext: NextFunction = (err?: Error) => {
@@ -60,8 +59,7 @@ export class RouteExecutor {
 
   /**
    * @function executeHandler
-   * @description Executes a route handler and handles any promises it may return.
-   * @async
+   * Executes a route handler and handles any promises it may return.
    * @private
    * @static
    * @param {Handler} handler - The route handler function.
@@ -73,7 +71,7 @@ export class RouteExecutor {
     return new Promise<void>((resolve, reject) => {
       /**
        * @function next
-       * @description Callback function to be called by the handler to indicate completion or error.
+       * Callback function to be called by the handler to indicate completion or error.
        * @param {Error} [err] - An optional error that may have occurred during handler execution.
        */
       const next: NextFunction = (err?: Error) => {

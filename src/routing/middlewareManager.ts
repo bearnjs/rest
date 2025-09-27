@@ -2,44 +2,44 @@ import type { Request, Response, Handler, NextFunction } from '../types';
 
 /**
  * @interface MiddlewareConfig
- * @description Configuration for a middleware, including its path and handler function.
+ * Configuration for a middleware, including its path and handler function.
  */
 export interface MiddlewareConfig {
   /**
    * @property {string} [path]
-   * @description Optional path that the middleware should apply to.
+   * Optional path that the middleware should apply to.
    */
   path?: string;
 
   /**
    * @property {Handler} handler
-   * @description The function that will handle the middleware logic.
+   * The function that will handle the middleware logic.
    */
   handler: Handler;
 }
 
 /**
  * @class MiddlewareManager
- * @classdesc Manages the execution and caching of middleware functions.
+ * Manages the execution and caching of middleware functions.
  */
 export class MiddlewareManager {
   /**
    * @private
    * @type {MiddlewareConfig[]}
-   * @description List of registered middleware configurations.
+   * List of registered middleware configurations.
    */
   private middlewares: MiddlewareConfig[] = [];
 
   /**
    * @private
    * @type {Map<string, Handler[]>}
-   * @description Cache for storing applicable middleware handlers for specific paths.
+   * Cache for storing applicable middleware handlers for specific paths.
    */
   private middlewareCache = new Map<string, Handler[]>();
 
   /**
    * @function addMiddleware
-   * @description Adds a new middleware to the manager and clears the cache.
+   * Adds a new middleware to the manager and clears the cache.
    * @param {MiddlewareConfig} middleware - The middleware configuration to add.
    */
   addMiddleware(middleware: MiddlewareConfig): void {
@@ -49,7 +49,7 @@ export class MiddlewareManager {
 
   /**
    * @function getApplicableMiddleware
-   * @description Retrieves middleware handlers applicable to a given path, using caching for efficiency.
+   * Retrieves middleware handlers applicable to a given path, using caching for efficiency.
    * @param {string} pathname - The path to get applicable middleware for.
    * @returns {Handler[]} An array of middleware handlers that apply to the given path.
    */
@@ -70,9 +70,8 @@ export class MiddlewareManager {
   }
 
   /**
-   * @async
    * @function executeMiddleware
-   * @description Executes all middleware applicable to a request, then calls the route handler.
+   * Executes all middleware applicable to a request, then calls the route handler.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    * @param {string} pathname - The path of the request.
@@ -134,7 +133,7 @@ export class MiddlewareManager {
   /**
    * @private
    * @function handleError
-   * @description Handles errors that occur during middleware execution.
+   * Handles errors that occur during middleware execution.
    * @param {Error} err - The error that occurred.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
@@ -148,7 +147,7 @@ export class MiddlewareManager {
 
   /**
    * @function clearCache
-   * @description Clears the cache of middleware handlers.
+   * Clears the cache of middleware handlers.
    */
   clearCache(): void {
     this.middlewareCache.clear();
@@ -156,7 +155,7 @@ export class MiddlewareManager {
 
   /**
    * @function getMiddlewares
-   * @description Retrieves all registered middleware configurations.
+   * Retrieves all registered middleware configurations.
    * @returns {MiddlewareConfig[]} An array of all registered middleware configurations.
    */
   getMiddlewares(): MiddlewareConfig[] {

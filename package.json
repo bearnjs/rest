@@ -4,7 +4,6 @@
   "description": "A fast and lightweight HTTP framework built from scratch in TypeScript",
   "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "exports": {
@@ -80,12 +79,12 @@
     "build": "tsup",
     "build:watch": "tsup --watch",
     "build:tsc": "tsc",
-    "docs": "documentation build --config .documentation.yml",
+    "docs": "typedoc --config typedoc.config.js",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -115,5 +114,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "pnpm@10.13.0+sha512.e08cbfa5d0c47e148d9d92965513af3d06a42ff99b6e0e82a7d10512858d0fb680a03c1e6772d369a2305c79306c9257989a3576b7057d6877469c9a1c7563f0"
+  "packageManager": "pnpm@10.13.0"
 }

@@ -15,35 +15,35 @@ import type { Server } from 'http';
 /**
  * @class BearnApp
  * @augments Router
- * @classdesc This class represents a Bearn application, which is an extension of the Router class.
+ * This class represents a Bearn application, which is an extension of the Router class.
  * It provides methods to configure and start an HTTP server with middleware support.
  */
 export class BearnApp extends Router {
   /**
    * @private
    * @type {Server | undefined}
-   * @description The HTTP server instance.
+   * The HTTP server instance.
    */
   private server?: Server;
 
   /**
    * @private
    * @type {ErrorHandler[]}
-   * @description A list of global error handlers.
+   * A list of global error handlers.
    */
   private errorHandlers: ErrorHandler[] = [];
 
   /**
    * @private
    * @type {boolean}
-   * @description Flag to check if decorators have been registered.
+   * Flag to check if decorators have been registered.
    */
   private decoratorsRegistered = false;
 
   /**
    * @private
    * @type {AppOptions}
-   * @description Configuration options for the Bearn application.
+   * Configuration options for the Bearn application.
    */
   private appOptions: AppOptions = {};
 
@@ -63,7 +63,6 @@ export class BearnApp extends Router {
 
   /**
    * Constructs a new Bearn application instance.
-   * @constructs
    * @param {AppOptions} [options={}] - The options for the Bearn application.
    */
   constructor(options: AppOptions = {}) {
