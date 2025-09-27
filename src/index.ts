@@ -12,10 +12,8 @@ import { Router } from './routing/router';
 import type { AppOptions, RouterOptions } from './types';
 
 /**
- * Creates a new Bearn REST application instance.
- *
- * This is the recommended way to create a new Bearn application rather than
- * instantiating {@link BearnApp} directly.
+ * @function
+ * @description Creates a new Bearn REST application instance. This is the preferred method to initialize a Bearn application instead of directly instantiating {@link BearnApp}.
  *
  * @example
  * ```ts
@@ -33,14 +31,16 @@ import type { AppOptions, RouterOptions } from './types';
  * app.start();
  * ```
  *
- * @param options {@link AppOptions} - Configuration options for the Bearn application
- * @returns A new configured Bearn application instance
+ * @param {AppOptions} [options] - Configuration options for the Bearn application.
+ * @returns {BearnApp} A new configured Bearn application instance.
  */
 export default function createApp(options?: AppOptions): BearnApp {
   return new BearnApp(options);
 }
+
 /**
- * Creates a new Bearn router instance.
+ * @function
+ * @description Creates a new Bearn router instance. This function allows you to set up a router with optional configurations.
  *
  * @example
  * ```ts
@@ -72,8 +72,8 @@ export default function createApp(options?: AppOptions): BearnApp {
  * });
  * ```
  *
- * @param options {@link RouterOptions} - Configuration options for the Bearn router
- * @returns A new configured Bearn router instance
+ * @param {RouterOptions} [options] - Configuration options for the Bearn router.
+ * @returns {Router} A new configured Bearn router instance.
  */
 export function createRouter(options?: RouterOptions): Router {
   return new Router(options);

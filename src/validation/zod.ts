@@ -3,28 +3,70 @@ import type { Handler, JsonValue, NextFunction, Request, Response } from '../typ
 // Minimal runtime contract for schema objects (Zod or compatible)
 type AnyZod = { parse: (input: unknown) => unknown };
 
-/** Schema bag for validating different request parts */
+/**
+ * @typedef {Object} SchemaSet
+ * @description Schema bag for validating different request parts.
+ * @template TBody
+ * @template TQuery
+ * @template TParams
+ * @property {AnyZod} [body] - Schema for request body validation.
+ * @property {AnyZod} [query] - Schema for query parameters validation.
+ * @property {AnyZod} [params] - Schema for URL parameters validation.
+ * @property {Object} [__types__] - Phantom type holders for inference through helpers.
+ * @property {TBody} [__types__.body] - Type for request body.
+ * @property {TQuery} [__types__.query] - Type for query parameters.
+ * @property {TParams} [__types__.params] - Type for URL parameters.
+ */
 export type SchemaSet<TBody = JsonValue, TQuery = Record<string, string>, TParams = Record<string, string>> = {
   body?: AnyZod;
   query?: AnyZod;
   params?: AnyZod;
-  // Phantom type holders for inference through helpers
   __types__?: { body: TBody; query: TQuery; params: TParams };
 };
 
+/**
+ * @typedef {JsonValue} InferBody
+ * @description Infers the type of the request body from the schema set.
+ * @template S
+ * @param {SchemaSet} S - The schema set to infer from.
+ * @returns {JsonValue} The inferred type of the request body.
+ */
 export type InferBody<S extends SchemaSet> = S extends SchemaSet<infer TB, unknown, unknown> ? TB : JsonValue;
+
+/**
+ * @typedef {Record<string, string>} InferQuery
+ * @description Infers the type of the query parameters from the schema set.
+ * @template S
+ * @param {SchemaSet} S - The schema set to infer from.
+ * @returns {Record<string, string>} The inferred type of the query parameters.
+ */
 export type InferQuery<S extends SchemaSet> =
   S extends SchemaSet<unknown, infer TQ, unknown> ? TQ : Record<string, string>;
+
+/**
+ * @typedef {Record<string, string>} InferParams
+ * @description Infers the type of the URL parameters from the schema set.
+ * @template S
+ * @param {SchemaSet} S - The schema set to infer from.
+ * @returns {Record<string, string>} The inferred type of the URL parameters.
+ */
 export type InferParams<S extends SchemaSet> =
   S extends SchemaSet<unknown, unknown, infer TP> ? TP : Record<string, string>;
 
 /**
- * Create a validation middleware for the given schemas.
- * Validates cookie-safe, fast-fail with 400 and a structured error payload.
+ * @function validate
+ * @description Create a validation middleware for the given schemas. Validates cookie-safe, fast-fail with 400 and a structured error payload.
+ * @param {SchemaSet} schemas - The set of schemas to validate against.
+ * @returns {Handler} The middleware handler function.
  */
 export function validate(schemas: SchemaSet): Handler {
-  // Targeted coercion using Zod issues to convert string inputs into
-  // numbers/booleans when schema expects them.
+  /**
+   * @function tryCoerceByIssues
+   * @description Attempts to coerce input values based on validation issues.
+   * @param {unknown} input - The input data to be coerced.
+   * @param {Array<Object>} issues - The list of issues encountered during validation.
+   * @returns {unknown} The coerced input data.
+   */
   const tryCoerceByIssues = (
     input: unknown,
     issues: Array<{
@@ -34,7 +76,14 @@ export function validate(schemas: SchemaSet): Handler {
       received?: unknown;
     }>
   ): unknown => {
-    // Helper to set a value at a deep path on a cloned structure
+    /**
+     * @function setDeep
+     * @description Helper to set a value at a deep path on a cloned structure.
+     * @param {unknown} obj - The object to set the value on.
+     * @param {Array<string|number>} path - The path to set the value at.
+     * @param {unknown} value - The value to set.
+     * @returns {unknown} The updated object.
+     */
     const setDeep = (obj: unknown, path: (string | number)[], value: unknown): unknown => {
       if (path.length === 0) return value;
       if (obj === null || typeof obj !== 'object') return obj;
@@ -46,6 +95,13 @@ export function validate(schemas: SchemaSet): Handler {
       return cloned;
     };
 
+    /**
+     * @function coercePrimitive
+     * @description Coerces a primitive value to the expected type.
+     * @param {unknown} val - The value to coerce.
+     * @param {unknown} expected - The expected type.
+     * @returns {unknown} The coerced value.
+     */
     const coercePrimitive = (val: unknown, expected: unknown): unknown => {
       if (typeof val === 'string') {
         const exp = String(expected);
@@ -67,12 +123,18 @@ export function validate(schemas: SchemaSet): Handler {
     let output = input;
     for (const issue of issues) {
       if (issue.code !== 'invalid_type') continue;
-      // toot value coercion
+      // Attempt value coercion
       if (issue.path.length === 0) {
         output = coercePrimitive(output, issue.expected);
         continue;
       }
-      // get current value at path
+      /**
+       * @function getDeep
+       * @description Retrieves the current value at a specified path.
+       * @param {unknown} obj - The object to retrieve the value from.
+       * @param {Array<string|number>} path - The path to retrieve the value from.
+       * @returns {unknown} The value at the specified path.
+       */
       const getDeep = (obj: unknown, path: (string | number)[]): unknown => {
         let cur: unknown = obj;
         for (let j = 0; j < path.length; j++) {

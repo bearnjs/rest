@@ -13,40 +13,45 @@ import type { AppOptions, Request, Response, ErrorHandler, Handler, ListenInfo, 
 import type { Server } from 'http';
 
 /**
- * Creates a new Bearn application instance.
- *
- * This is the recommended way to create a new Bearn application rather than
- * instantiating {@link BearnApp} directly.
- *
- * @example
- * ```ts
- * import Bearn from 'Bearn';
- *
- * const app = Bearn({
- *   port: 3000,
- *   host: 'localhost',
- *   cors: {
- *     origin: 'http://localhost:3000',
- *     methods: ['GET', 'POST'],
- *   }
- * });
- *
- * app.start();
- * ```
- *
- * @param options {@link AppOptions} - Configuration options for the Bearn application
- * @returns A new configured Bearn application instance
+ * @class BearnApp
+ * @augments Router
+ * @classdesc This class represents a Bearn application, which is an extension of the Router class.
+ * It provides methods to configure and start an HTTP server with middleware support.
  */
 export class BearnApp extends Router {
+  /**
+   * @private
+   * @type {Server | undefined}
+   * @description The HTTP server instance.
+   */
   private server?: Server;
+
+  /**
+   * @private
+   * @type {ErrorHandler[]}
+   * @description A list of global error handlers.
+   */
   private errorHandlers: ErrorHandler[] = [];
+
+  /**
+   * @private
+   * @type {boolean}
+   * @description Flag to check if decorators have been registered.
+   */
   private decoratorsRegistered = false;
+
+  /**
+   * @private
+   * @type {AppOptions}
+   * @description Configuration options for the Bearn application.
+   */
   private appOptions: AppOptions = {};
 
-  /** Registers a middleware.
-   * @param handler {@link Handler} - The middleware handler.
-   * @param path @type {string} - The path prefix.
-   * @param pathOrHandler @type {string | Handler} - The path prefix or handler.
+  /**
+   * Registers a middleware or router.
+   * @override
+   * @param {string | Handler | Router} pathOrHandler - The path prefix or handler.
+   * @param {Handler | Router} [handler] - The middleware handler or router.
    */
   override use(handler: Handler): void;
   override use(path: string, handler: Handler): void;
@@ -57,9 +62,9 @@ export class BearnApp extends Router {
   }
 
   /**
-   * Creates a new Bearn application instance.
-   * Pass {@link AppOptions} to customize listening, logging, and CORS.
-   * @param options {@link AppOptions} - The options for the Bearn application.
+   * Constructs a new Bearn application instance.
+   * @constructs
+   * @param {AppOptions} [options={}] - The options for the Bearn application.
    */
   constructor(options: AppOptions = {}) {
     const routerOptions: RouterOptions | undefined = options.rootPrefix ? { prefix: options.rootPrefix } : undefined;
@@ -75,9 +80,9 @@ export class BearnApp extends Router {
 
   /**
    * Starts the HTTP server and begins handling requests.
-   * Returns the underlying Node `Server` instance.
-   * @param callback @type {(info: ListenInfo) => void} - The callback function to call when the server starts.
-   * @returns {@link Server} - The underlying Node `Server` instance.
+   * @function
+   * @param {(info: ListenInfo) => void} [callback] - The callback function to call when the server starts.
+   * @returns {Server} The underlying Node `Server` instance.
    */
   start(callback?: (info: ListenInfo) => void): Server {
     const { host: configHost, port = 8000, backlog, appName, appVersion } = this.appOptions;
@@ -186,22 +191,31 @@ export class BearnApp extends Router {
     return this.server;
   }
 
-  /** Stops the server if running.
-   * @param callback @type {(err?: Error) => void} - The callback function to call when the server stops.
-   * @returns @type {void} - The underlying Node `Server` instance.
+  /**
+   * Stops the server if running.
+   * @function
+   * @param {(err?: Error) => void} [callback] - The callback function to call when the server stops.
    */
   close(callback?: (err?: Error) => void): void {
     this.server?.close(callback);
   }
 
-  /** Registers a global error handler invoked on uncaught route/middleware errors.
-   * @param handler {@link ErrorHandler} - The error handler function to register.
-   * @returns @type {void} - The underlying Node `Server` instance.
+  /**
+   * Registers a global error handler invoked on uncaught route/middleware errors.
+   * @function
+   * @param {ErrorHandler} handler - The error handler function to register.
    */
   onError(handler: ErrorHandler): void {
     this.errorHandlers.push(handler);
   }
 
+  /**
+   * Handles global errors by invoking registered error handlers.
+   * @private
+   * @param {Error} err - The error to handle.
+   * @param {Request} req - The request object.
+   * @param {Response} res - The response object.
+   */
   private handleGlobalError(err: Error, req: Request, res: Response): void {
     for (const handler of this.errorHandlers) {
       try {
@@ -235,7 +249,7 @@ export class BearnApp extends Router {
   /**
    * Registers any controllers discovered via decorators.
    * Typically invoked automatically on first request.
-   * @returns @type {void} - The underlying Node `Server` instance.
+   * @function
    */
   registerDecoratedControllers(): void {
     for (const ctrl of getRegisteredControllers()) {

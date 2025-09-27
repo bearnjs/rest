@@ -1,11 +1,19 @@
 import type { ListenInfo, Route } from '../types';
 
 /**
- * Prints a fiber-style startup summary including listen URLs and routes.
- * @param info @type {ListenInfo} - The information about the server.
- * @param routes @type {Route[]} - The routes of the server.
- * @param options @type {{ host: string; disableLogging?: boolean; printRoutes?: boolean; appName: string; appVersion: string; }} - The options for the logging.
- * @returns @type {void} - The underlying Node `Server` instance.
+ * @function printStartupLog
+ * @description Logs a startup summary for the server, including listen URLs and routes, in a human-readable format.
+ * @param {ListenInfo} info - Contains server information such as addresses and port.
+ * @param {Route[]} routes - An array of route objects, each containing a method and path.
+ * @param {Object} options - Configuration options for logging.
+ * @param {string} options.host - The host address of the server.
+ * @param {boolean} [options.disableLogging=false] - If true, logging is disabled.
+ * @param {boolean} [options.printRoutes=true] - If true, routes will be printed.
+ * @param {string} options.appName - The name of the application.
+ * @param {string} options.appVersion - The version of the application.
+ * @returns {void} This function does not return a value.
+ * @example
+ * printStartupLog(info, routes, { host: 'localhost', appName: 'MyApp', appVersion: '1.0.0' });
  */
 export function printStartupLog(
   info: ListenInfo,

@@ -1,59 +1,70 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
 /**
- * Options for setting HTTP cookies.
- * @param httpOnly Whether the cookie is only accessible via HTTP(S)
- * @param secure Whether the cookie requires HTTPS
- * @param maxAge Maximum age of the cookie in seconds
+ * Represents the options available for setting HTTP cookies.
+ * @interface
  */
 export interface CookieOptions {
-  /** Whether the cookie is only accessible via HTTP(S)
-   * @returns boolean
+  /**
+   * Indicates if the cookie is accessible only through HTTP(S).
+   * @type {boolean}
    */
   httpOnly?: boolean;
-  /** Whether the cookie requires HTTPS
-   * @returns boolean
+
+  /**
+   * Indicates if the cookie requires a secure connection (HTTPS).
+   * @type {boolean}
    */
   secure?: boolean;
-  /** Maximum age of the cookie in seconds
-   * @returns number
+
+  /**
+   * Specifies the maximum age of the cookie in seconds.
+   * @type {number}
    */
   maxAge?: number;
-  /** Cookie path scope
-   * @returns string
+
+  /**
+   * Defines the path scope of the cookie.
+   * @type {string}
    */
   path?: string;
-  /** Cookie domain scope
-   * @returns string
+
+  /**
+   * Defines the domain scope of the cookie.
+   * @type {string}
    */
   domain?: string;
-  /** SameSite attribute
-   * @returns 'strict' | 'lax' | 'none'
+
+  /**
+   * Specifies the SameSite attribute of the cookie.
+   * @type {'strict' | 'lax' | 'none'}
    */
   sameSite?: 'strict' | 'lax' | 'none';
 }
 
 /**
- * JSON primitive types
- * @param string String value
- * @param number Number value
- * @param boolean Boolean value
- * @param null Null value
- * @returns JsonPrimitive
+ * Represents the basic JSON primitive types.
+ * @typedef {string | number | boolean | null} JsonPrimitive
  */
 export type JsonPrimitive = string | number | boolean | null;
 
 /**
- * Recursive JSON value type
- * @param JsonPrimitive The primitive JSON value
- * @param JsonValue[] The array of JSON values
- * @param { [key: string]: JsonValue } The object of JSON values
- * @returns JsonValue
+ * Represents a recursive JSON value type, which can be a primitive, an array, or an object.
+ * @typedef {JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }} JsonValue
  */
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
-/** Utility to allow a type or an array of that type */
+/**
+ * Utility type to allow a type or an array of that type.
+ * @template T
+ * @typedef {T | T[]} MaybeArray
+ */
 export type MaybeArray<T> = T | T[];
+
+/**
+ * Represents a set of MIME types for setting content types.
+ * @typedef {string} SetContentType
+ */
 export type SetContentType =
   | 'application/octet-stream'
   | 'application/vnd.ms-fontobject'
@@ -114,7 +125,8 @@ export type SetContentType =
   | 'model/gltf-binary';
 
 /**
- * Content type hints and MIME types used in requests/responses
+ * Represents content type hints and MIME types used in HTTP requests and responses.
+ * @typedef {MaybeArray<'none' | 'text' | 'json' | 'formdata' | 'urlencoded' | 'arrayBuffer' | 'text/plain' | 'application/json' | 'multipart/form-data' | 'application/x-www-form-urlencoded' | 'application/octet-stream'>} ContentType
  */
 export type ContentType = MaybeArray<
   | 'none'
@@ -131,21 +143,20 @@ export type ContentType = MaybeArray<
 >;
 
 /**
- * Strongly typed HTTP headers record
+ * Represents a strongly typed record of HTTP headers.
+ * @typedef {Record<string, string | number>} HTTPHeaders
  */
 export type HTTPHeaders = Record<string, string | number> & {
   'www-authenticate'?: string;
   authorization?: string;
   'proxy-authenticate'?: string;
   'proxy-authorization'?: string;
-
   age?: string;
   'cache-control'?: string;
   'clear-site-data'?: string;
   expires?: string;
   'no-vary-search'?: string;
   pragma?: string;
-
   'last-modified'?: string;
   etag?: string;
   'if-match'?: string;
@@ -153,20 +164,15 @@ export type HTTPHeaders = Record<string, string | number> & {
   'if-modified-since'?: string;
   'if-unmodified-since'?: string;
   vary?: string;
-
   connection?: string;
   'keep-alive'?: string;
-
   accept?: string;
   'accept-encoding'?: string;
   'accept-language'?: string;
-
   expect?: string;
   'max-forwards'?: string;
-
   cookie?: string;
   'set-cookie'?: string | string[];
-
   'access-control-allow-origin'?: string;
   'access-control-allow-credentials'?: string;
   'access-control-allow-headers'?: string;
@@ -177,29 +183,22 @@ export type HTTPHeaders = Record<string, string | number> & {
   'access-control-request-method'?: string;
   origin?: string;
   'timing-allow-origin'?: string;
-
   'content-disposition'?: string;
-
   'content-length'?: string | number;
   'content-type'?: SetContentType | (string & {});
   'content-encoding'?: string;
   'content-language'?: string;
   'content-location'?: string;
-
   forwarded?: string;
   via?: string;
-
   location?: string;
   refresh?: string;
-
   allow?: string;
   server?: 'Elysia' | (string & {});
-
   'accept-ranges'?: string;
   range?: string;
   'if-range'?: string;
   'content-range'?: string;
-
   'content-security-policy'?: string;
   'content-security-policy-report-only'?: string;
   'cross-origin-embedder-policy'?: string;
@@ -212,16 +211,13 @@ export type HTTPHeaders = Record<string, string | number> & {
   'x-content-type-options'?: string;
   'x-frame-options'?: string;
   'x-xss-protection'?: string;
-
   'last-event-id'?: string;
   'ping-from'?: string;
   'ping-to'?: string;
   'report-to'?: string;
-
   te?: string;
   trailer?: string;
   'transfer-encoding'?: string;
-
   'alt-svg'?: string;
   'alt-used'?: string;
   date?: string;
@@ -233,7 +229,6 @@ export type HTTPHeaders = Record<string, string | number> & {
   'service-worker-allowed'?: string;
   'source-map'?: string;
   upgrade?: string;
-
   'x-dns-prefetch-control'?: string;
   'x-forwarded-for'?: string;
   'x-forwarded-host'?: string;
@@ -246,303 +241,349 @@ export type HTTPHeaders = Record<string, string | number> & {
 };
 
 /**
- * Augmented Node IncomingMessage with framework conveniences.
- * Extends the base Node IncomingMessage with additional properties and methods.
- * @returns Request
+ * Represents an augmented Node.js IncomingMessage with additional properties and methods for convenience.
+ * @interface
+ * @extends IncomingMessage
+ * @template TParams, TQuery, TBody
  */
 export interface Request<
   TParams extends Record<string, string> = Record<string, string>,
   TQuery extends Record<string, string> = Record<string, string>,
   TBody extends JsonValue = JsonValue,
 > extends IncomingMessage {
-  /** URL parameters parsed from route pattern
-   * @returns URL parameters parsed from route pattern
+  /**
+   * URL parameters parsed from the route pattern.
+   * @type {TParams}
    */
   params: TParams;
 
-  /** Query string parameters
-   * @returns Query string parameters
+  /**
+   * Query string parameters.
+   * @type {TQuery}
    */
   query: TQuery;
 
-  /** HTTP method
-   * @returns HTTP method
+  /**
+   * HTTP method used for the request.
+   * @type {HttpMethod}
    */
   method?: HttpMethod;
 
-  /** Parsed request body
-   * @returns Parsed request body
+  /**
+   * Parsed request body.
+   * @type {TBody}
    */
   body?: TBody;
 
-  /** Request URL path
-   * @returns Request URL path
+  /**
+   * Request URL path.
+   * @type {string}
    */
   path?: string;
 
-  /** Raw unparsed request body
-   * @returns Raw unparsed request body
+  /**
+   * Raw unparsed request body.
+   * @type {string}
    */
   rawBody?: string;
 
-  /** Parsed cookies from Cookie header
-   * @returns Map of cookie name to value
+  /**
+   * Parsed cookies from the Cookie header.
+   * @type {Record<string, string>}
    */
   cookies?: Record<string, string>;
 
   /**
-   * Get header value by name
-   * @param name Header name
-   * @returns Header value(s)
+   * Get the value of a header by name.
+   * @function
+   * @param {string} name - Header name.
+   * @returns {string | string[] | undefined} Header value(s).
    */
   get(name: 'set-cookie'): string[] | undefined;
   get(name: string): string | undefined;
 
   /**
-   * Alias for get()
-   * @param name Header name
-   * @returns Header value(s)
+   * Alias for the get() method.
+   * @function
+   * @param {string} name - Header name.
+   * @returns {string | string[] | undefined} Header value(s).
    */
   header(name: 'set-cookie'): string[] | undefined;
   header(name: string): string | undefined;
 
-  /** Request protocol (http/https)
-   * @returns Request protocol (http/https)
+  /**
+   * Request protocol (http/https).
+   * @type {string}
    */
   protocol?: string;
 
-  /** Whether request is HTTPS
-   * @returns Whether request is HTTPS
+  /**
+   * Indicates if the request is made over HTTPS.
+   * @type {boolean}
    */
   secure?: boolean;
 
-  /** Remote IP address
-   * @returns Remote IP address
+  /**
+   * Remote IP address of the client.
+   * @type {string}
    */
   ip?: string;
 
-  /** Proxy IP addresses
-   * @returns Proxy IP addresses
+  /**
+   * Proxy IP addresses.
+   * @type {string[]}
    */
   ips?: string[];
 
-  /** Hostname from Host header
-   * @returns Hostname from Host header
+  /**
+   * Hostname from the Host header.
+   * @type {string}
    */
   hostname?: string | undefined;
 
-  /** Host header value
-   * @returns Host header value
+  /**
+   * Host header value.
+   * @type {string}
    */
   host?: string | undefined;
 
-  /** Remote port
-   * @returns Remote port
+  /**
+   * Remote port of the client.
+   * @type {number}
    */
   port?: number | undefined;
 
-  /** Whether response is still fresh
-   * @returns Whether response is still fresh
+  /**
+   * Indicates if the response is still fresh.
+   * @type {boolean}
    */
   fresh?: boolean;
 
-  /** Whether response is stale
-   * @returns Whether response is stale
+  /**
+   * Indicates if the response is stale.
+   * @type {boolean}
    */
   stale?: boolean;
 
-  /** Whether request is XHR
-   * @returns Whether request is XHR
+  /**
+   * Indicates if the request is an XMLHttpRequest (XHR).
+   * @type {boolean}
    */
   xhr?: boolean;
 
-  /** Original request URL
-   * @returns Original request URL
+  /**
+   * Original request URL.
+   * @type {string}
    */
   originalUrl?: string;
 
-  /** Array of subdomains
-   * @returns Array of subdomains
+  /**
+   * Array of subdomains.
+   * @type {string[]}
    */
   subdomains: string[];
 
   /**
-   * Get accepted content types
-   * @returns Array of accepted types
+   * Get accepted content types.
+   * @function
+   * @returns {string[]} Array of accepted types.
    */
   accepts(): string[];
 
   /**
-   * Get accepted charsets
-   * @returns Array of accepted charsets
+   * Get accepted charsets.
+   * @function
+   * @returns {string[]} Array of accepted charsets.
    */
   acceptsCharsets(): string[];
 
   /**
-   * Get accepted encodings
-   * @returns Array of accepted encodings
+   * Get accepted encodings.
+   * @function
+   * @returns {string[]} Array of accepted encodings.
    */
   acceptsEncodings(): string[];
 
   /**
-   * Get accepted languages
-   * @returns Array of accepted languages
+   * Get accepted languages.
+   * @function
+   * @returns {string[]} Array of accepted languages.
    */
   acceptsLanguages(): string[];
 }
 
 /**
- * Augmented Node ServerResponse with Express-like helpers.
- * Extends the base Node ServerResponse with additional methods.
- * @returns Response
+ * Represents an augmented Node.js ServerResponse with additional methods similar to Express.
+ * @interface
+ * @extends ServerResponse
+ * @template TResponse
  */
 export interface Response<TResponse extends JsonValue = JsonValue> extends ServerResponse {
   /**
-   * Send a JSON response
-   * @param data Data to send as JSON
-   * @returns Response
+   * Send a JSON response.
+   * @function
+   * @param {TResponse} data - Data to send as JSON.
+   * @returns {Response<TResponse>} The response object.
    */
   json(data: TResponse): Response<TResponse>;
 
   /**
-   * Send a response
-   * @param data Data to send
-   * @returns Response
+   * Send a response.
+   * @function
+   * @param {string | Buffer} data - Data to send.
+   * @returns {Response<TResponse>} The response object.
    */
   send(data: string | Buffer): Response<TResponse>;
 
   /**
-   * Set response status code
-   * @param code HTTP status code
-   * @returns Response
+   * Set the response status code.
+   * @function
+   * @param {number} code - HTTP status code.
+   * @returns {Response<TResponse>} The response object.
    */
   status(code: number): Response<TResponse>;
 
   /**
-   * Send status code as response
-   * @param code HTTP status code
-   * @returns Response
+   * Send a status code as the response.
+   * @function
+   * @param {number} code - HTTP status code.
+   * @returns {Response<TResponse>} The response object.
    */
   sendStatus(code: number): Response<TResponse>;
 
   /**
-   * Set Content-Type header
-   * @param type MIME type
-   * @returns Response
+   * Set the Content-Type header.
+   * @function
+   * @param {SetContentType | string} type - MIME type.
+   * @returns {Response<TResponse>} The response object.
    */
   type(type: SetContentType | (string & {})): Response<TResponse>;
 
   /**
-   * Set Content-Type header
-   * @param type MIME type
-   * @returns Response
+   * Set the Content-Type header (alias for type()).
+   * @function
+   * @param {SetContentType | string} type - MIME type.
+   * @returns {Response<TResponse>} The response object.
    */
   contentType(type: SetContentType | (string & {})): Response<TResponse>;
 
   /**
-   * Redirect to URL
-   * @param url Redirect target URL
-   * @param status HTTP status code
-   * @returns Response
+   * Redirect to a URL.
+   * @function
+   * @param {string} url - Redirect target URL.
+   * @param {number} [status] - HTTP status code.
+   * @returns {Response<TResponse>} The response object.
    */
   redirect(url: string, status?: number): Response<TResponse>;
 
   /**
-   * Set response header
-   * @param field Header name or object
-   * @param value Header value
-   * @returns Response
+   * Set a response header.
+   * @function
+   * @param {string | HTTPHeaders} field - Header name or object.
+   * @param {string | string[] | number} [value] - Header value.
+   * @returns {Response<TResponse>} The response object.
    */
   set(field: HTTPHeaders): Response<TResponse>;
   set(field: string, value?: string | string[] | number): Response<TResponse>;
   set<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response<TResponse>;
 
   /**
-   * Set response header (alias for set())
-   * @param field Header name or object
-   * @param value Header value
-   * @returns Response
+   * Set a response header (alias for set()).
+   * @function
+   * @param {string | HTTPHeaders} field - Header name or object.
+   * @param {string | string[] | number} [value] - Header value.
+   * @returns {Response<TResponse>} The response object.
    */
   header(field: HTTPHeaders): Response<TResponse>;
   header(field: string, value?: string | string[] | number): Response<TResponse>;
   header<K extends keyof HTTPHeaders>(field: K, value: HTTPHeaders[K]): Response<TResponse>;
 
   /**
-   * Get response header
-   * @param field Header name
-   * @returns Response
+   * Get a response header.
+   * @function
+   * @param {string} field - Header name.
+   * @returns {string | undefined} The header value.
    */
   get(field: string): string | undefined;
   get<K extends keyof HTTPHeaders>(field: K): HTTPHeaders[K] | undefined;
 
   /**
-   * Append to response header
-   * @param field Header name
-   * @param value Value to append
-   * @returns Response
+   * Append a value to a response header.
+   * @function
+   * @param {string} field - Header name.
+   * @param {string | string[] | number} [value] - Value to append.
+   * @returns {Response<TResponse>} The response object.
    */
   append(field: string, value?: string[] | string | number): Response<TResponse>;
   append<K extends keyof HTTPHeaders>(field: K, value?: HTTPHeaders[K]): Response<TResponse>;
 
   /**
-   * Set Link headers
-   * @param links Object of link relations
-   * @returns Response
+   * Set Link headers.
+   * @function
+   * @param {Record<string, string>} links - Object of link relations.
+   * @returns {Response<TResponse>} The response object.
    */
   links(links: Record<string, string>): Response<TResponse>;
 
   /**
-   * Set Location header
-   * @param url URL to set in Location header
-   * @returns Response
+   * Set the Location header.
+   * @function
+   * @param {string} url - URL to set in Location header.
+   * @returns {Response<TResponse>} The response object.
    */
   location(url: string): Response<TResponse>;
 
   /**
-   * Add field to Vary header
-   * @param field Header to vary on
-   * @returns Response
+   * Add a field to the Vary header.
+   * @function
+   * @param {string} field - Header to vary on.
+   * @returns {Response<TResponse>} The response object.
    */
   vary(field: string): Response<TResponse>;
 
   /**
-   * Send JSONP response
-   * @param data Data to send as JSONP
-   * @returns Response
+   * Send a JSONP response.
+   * @function
+   * @param {JsonValue} data - Data to send as JSONP.
+   * @returns {Response<TResponse>} The response object.
    */
   jsonp(data: JsonValue): Response<TResponse>;
 
   /**
-   * Set cookie
-   * @param name Cookie name
-   * @param value Cookie value
-   * @param options Cookie options
-   * @returns Response
+   * Set a cookie.
+   * @function
+   * @param {string} name - Cookie name.
+   * @param {string} value - Cookie value.
+   * @param {CookieOptions} [options] - Cookie options.
+   * @returns {Response<TResponse>} The response object.
    */
   cookie(name: string, value: string, options?: CookieOptions): Response<TResponse>;
 
   /**
-   * Clear cookie
-   * @param name Cookie name
-   * @param options Cookie options
-   * @returns Response
+   * Clear a cookie.
+   * @function
+   * @param {string} name - Cookie name.
+   * @param {CookieOptions} [options] - Cookie options.
+   * @returns {Response<TResponse>} The response object.
    */
   clearCookie(name: string, options?: CookieOptions): Response<TResponse>;
 }
 
 /**
- * Callback to signal completion or error in middleware/handlers.
- * @param err Optional error to pass to next error handler
- * @returns NextFunction
+ * Callback function to signal completion or error in middleware/handlers.
+ * @callback NextFunction
+ * @param {Error} [err] - Optional error to pass to the next error handler.
  */
 export type NextFunction = (err?: Error) => void;
 
 /**
- * Request handler signature.
- * @param req Request object
- * @param res Response object
- * @param next Next function
- * @returns Handler
+ * Represents a request handler signature.
+ * @template TParams, TQuery, TBody, TRes
+ * @typedef {function} Handler
+ * @param {Request<TParams, TQuery, TBody>} req - Request object.
+ * @param {Response<TRes>} res - Response object.
+ * @param {NextFunction} [next] - Next function.
+ * @returns {void | Response<TRes> | Promise<void | Response<TRes>>} Handler result.
  */
 export type Handler<
   TParams extends Record<string, string> = Record<string, string>,
@@ -578,11 +619,21 @@ export type ErrorHandler<
   (err: Error, req: Request, res: Response, next?: NextFunction): void;
 };
 
-/** HTTP method type */
+/**
+ * Represents the basic HTTP methods used in requests.
+ * @typedef {string} HttpMethod
+ * @example
+ * // Example usage:
+ * const method: HttpMethod = 'GET';
+ */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
 
 /**
- * Extended HTTP method literals aligned with various specifications and proxies
+ * Represents an extended set of HTTP methods, including those used by various specifications and proxies.
+ * @typedef {string} HTTPMethod
+ * @example
+ * // Example usage:
+ * const method: HTTPMethod = 'CONNECT';
  */
 export type HTTPMethod =
   | (string & {})
@@ -623,257 +674,262 @@ export type HTTPMethod =
   | 'ALL';
 
 /**
- * Registered route definition at runtime.
- * @returns @type {Route}
+ * Describes a route registered at runtime, including its method, path, and handler.
+ * @interface Route
  */
 export interface Route {
-  /** HTTP method
-   * @returns HTTP method
+  /**
+   * The HTTP method for the route.
+   * @type {HttpMethod}
    */
   method: HttpMethod;
-  /** URL path pattern
-   * @returns URL path pattern
+  /**
+   * The URL path pattern for the route.
+   * @type {string}
    */
   path: string;
-  /** Route handler function
-   * @returns Route handler function
+  /**
+   * The function that handles requests to this route.
+   * @type {Handler}
    */
   handler: Handler;
-  /** Compiled path regex
-   * @returns Compiled path regex
+  /**
+   * A compiled regular expression for the path, if applicable.
+   * @type {RegExp}
    */
   regex?: RegExp;
-  /** Named parameters from path */
-  paramNames?: string[];
-  /** Route schema metadata
-   * @returns Route schema metadata
+  /**
+   * Names of parameters extracted from the path.
+   * @type {string[]}
    */
-  /** Route schema metadata */
+  paramNames?: string[];
+  /**
+   * Metadata describing the route's schema.
+   * @type {RouteSchema}
+   */
   schema?: RouteSchema | undefined;
-  /** Optional per-route middlewares (run before handler) */
+  /**
+   * Middlewares that run before the route handler.
+   * @type {Handler[]}
+   */
   middlewares?: Handler[];
 }
 
 /**
- * Information reported when the server starts listening.
- * @returns @type {ListenInfo}
+ * Provides information about the server when it starts listening.
+ * @interface ListenInfo
  */
 export interface ListenInfo {
   /**
-   * The port of the server.
-   * @returns The port of the server.
+   * The port number the server is listening on.
+   * @type {number}
    */
   port: number;
   /**
-   * The addresses of the server.
-   * @returns The addresses of the server.
+   * The addresses the server is bound to.
+   * @type {string[]}
    */
   addresses: string[];
   /**
-   * The routes of the server.
-   * @returns The routes of the server.
+   * The routes available on the server.
+   * @type {Route[]}
    */
   routes: Route[];
   /**
-   * The timestamp of the server.
-   * @returns The timestamp of the server.
+   * The timestamp when the server started.
+   * @type {string}
    */
   timestamp: string;
   /**
-   * The node version of the server.
-   * @returns The node version of the server.
+   * The version of Node.js the server is running on.
+   * @type {string}
    */
   nodeVersion: string;
   /**
-   * The platform of the server.
-   * @returns The platform of the server.
+   * The platform the server is running on.
+   * @type {string}
    */
   platform: string;
   /**
    * The process ID of the server.
-   * @returns The process ID of the server.
+   * @type {number}
    */
   pid: number;
 }
 
-/** Options controlling server listen behavior and startup logging */
 /**
- * Options controlling server listen behavior and startup logging
- * @returns @type {AppOptions}
+ * Options for configuring server behavior and logging during startup.
+ * @interface AppOptions
  */
 export interface AppOptions {
   /**
    * The name of the application.
-   * @returns The name of the application.
+   * @type {string}
    */
   appName?: string;
   /**
    * The version of the application.
-   * @returns The version of the application.
+   * @type {string}
    */
   appVersion?: string;
   /**
-   * The description of the application.
-   * @returns The description of the application.
+   * A brief description of the application.
+   * @type {string}
    */
   appDescription?: string;
   /**
-   * The host to listen on.
-   * @returns The host to listen on.
+   * The host address the server should listen on.
+   * @type {string}
    */
   host?: string;
   /**
-   * The port to listen on.
-   * @returns The port to listen on.
+   * The port number the server should listen on.
+   * @type {number}
    */
   port?: number;
   /**
-   * Whether to disable startup logging.
-   * @returns Whether to disable startup logging.
+   * Whether to disable logging during startup.
+   * @type {boolean}
    */
   disableLogging?: boolean;
   /**
-   * Whether to print route table on startup.
-   * @returns Whether to print route table on startup.
+   * Whether to print the route table on startup.
+   * @type {boolean}
    */
   printRoutes?: boolean;
-  /** Include internal routes in table
-   * @returns Include internal routes in table
+  /**
+   * Whether to include internal routes in the printed table.
+   * @type {boolean}
    */
   includeInternal?: boolean;
   /**
-   * The listen backlog size.
-   * @returns The listen backlog size.
+   * The size of the listen backlog.
+   * @type {number}
    */
   backlog?: number;
   /**
-   * The CORS configuration.
-   * @returns The CORS configuration.
+   * The CORS configuration for the server.
+   * @type {CorsOptions | false}
    */
   cors?: CorsOptions | false;
   /**
    * A global prefix to apply to all application routes.
-   * Example: '/api' prefixes every route.
+   * @type {string}
+   * @example
+   * // Example usage:
+   * const options: AppOptions = { rootPrefix: '/api' };
    */
   rootPrefix?: string;
 }
 
-/** CORS configuration passed to the CORS middleware */
 /**
- * CORS configuration passed to the CORS middleware
- * @returns @type {CorsOptions}
+ * Configuration options for CORS middleware.
+ * @interface CorsOptions
  */
 export interface CorsOptions {
   /**
-   * The allowed origins.
-   * @returns The allowed origins.
+   * The origins allowed to access the server.
+   * @type {string | RegExp | (string | RegExp)[]}
    */
   origin?: string | RegExp | (string | RegExp)[];
   /**
-   * The allowed HTTP methods.
-   * @returns The allowed HTTP methods.
+   * The HTTP methods allowed for CORS requests.
+   * @type {HTTPMethod[]}
    */
   methods?: HTTPMethod[];
   /**
-   * The allowed headers.
-   * @returns The allowed headers.
+   * The headers allowed in CORS requests.
+   * @type {string[]}
    */
   headers?: string[];
   /**
-   * Whether to allow credentials.
-   * @returns Whether to allow credentials.
+   * Whether credentials are allowed in CORS requests.
+   * @type {boolean}
    */
   credentials?: boolean;
   /**
-   * The headers exposed to client.
-   * @returns The headers exposed to client.
+   * The headers exposed to the client in CORS responses.
+   * @type {string[]}
    */
   exposeHeaders?: string[];
   /**
-   * The preflight cache time.
-   * @returns The preflight cache time.
+   * The maximum age for preflight requests in seconds.
+   * @type {number}
    */
   maxAgeSeconds?: number;
 }
 
 /**
- * Controller class constructor type
- * @returns @type {ControllerClass}
+ * Represents a class constructor for a controller.
+ * @typedef {ControllerClass}
  */
 export type ControllerClass = { new(...args: never[]): object }; // prettier-ignore
 
-/** Declarative route metadata used by decorators */
 /**
- * Declarative route metadata used by decorators
- * @returns @type {RouteDefinition}
+ * Metadata for defining routes using decorators.
+ * @interface RouteDefinition
  */
 export interface RouteDefinition {
   /**
-   * The HTTP method.
-   * @returns The HTTP method.
+   * The HTTP method for the route.
+   * @type {HttpMethod}
    */
   method: HttpMethod;
   /**
-   * The URL path pattern.
-   * @returns The URL path pattern.
+   * The URL path pattern for the route.
+   * @type {string}
    */
   path: string;
   /**
-   * The controller method name.
-   * @returns The controller method name.
+   * The name of the controller method handling the route.
+   * @type {string}
    */
   propertyKey: string;
   /**
-   * The route schema metadata.
-   * @returns The route schema metadata.
+   * Metadata describing the route's schema.
+   * @type {RouteSchema}
    */
   schema?: RouteSchema;
   /**
-   * Middlewares to run before the handler
+   * Middlewares to run before the route handler.
+   * @type {Handler[]}
    */
   middlewares?: Handler[];
 }
 
 /**
- * Minimal schema structure usable for OpenAPI generation
- * @param summary The short summary.
- * @param description The detailed description.
- * @param tags The OpenAPI tags.
- * @param params The URL parameter schemas.
- * @param query The query parameter schemas.
- * @param body The request body schema.
- * @param responses The response schemas.
- * @returns @type {RouteSchema}
+ * A minimal schema structure for generating OpenAPI documentation.
+ * @interface RouteSchema
  */
 export interface RouteSchema {
   /**
-   * The short summary.
-   * @returns The short summary.
+   * A short summary of the route.
+   * @type {string}
    */
   summary?: string;
   /**
-   * The detailed description.
-   * @returns The detailed description.
+   * A detailed description of the route.
+   * @type {string}
    */
   description?: string;
   /**
-   * The OpenAPI tags.
-   * @returns The OpenAPI tags.
+   * Tags for categorizing the route in OpenAPI documentation.
+   * @type {string[]}
    */
   tags?: string[];
   /**
-   * The URL parameter schemas.
-   * @returns The URL parameter schemas.
+   * Schemas for URL parameters.
+   * @type {Record<string, { type: string; description?: string; required?: boolean }>}
    */
   params?: Record<string, { type: string; description?: string; required?: boolean }>;
   /**
-   * The query parameter schemas.
-   * @returns The query parameter schemas.
+   * Schemas for query parameters.
+   * @type {Record<string, { type: string; description?: string; required?: boolean }>}
    */
   query?: Record<string, { type: string; description?: string; required?: boolean }>;
   /**
-   * The request body schema.
-   * @returns The request body schema.
+   * Schema for the request body.
+   * @type {{ type: string; properties?: Record<string, JsonValue>; required?: string[] }}
    */
   body?: {
     type: string;
@@ -881,21 +937,19 @@ export interface RouteSchema {
     required?: string[];
   };
   /**
-   * The response schemas.
-   * @returns The response schemas.
+   * Schemas for responses.
+   * @type {Record<string, { description?: string; content?: JsonValue }>}
    */
   responses?: Record<string, { description?: string; content?: JsonValue }>;
 }
 
-// TypedRequest/TypedResponse removed: use generic Request<TParams, TQuery, TBody> and Response<TRes> instead
-
 /**
- * Strongly-typed route handler signature
- * @param TParams The type of the URL parameters
- * @param TQuery The type of the query parameters
- * @param TBody The type of the request body
- * @param TResponse The type of the response
- * @returns @type {RouteHandler}
+ * Defines a strongly-typed route handler function.
+ * @typedef {RouteHandler}
+ * @param {TParams} TParams - The type of the URL parameters.
+ * @param {TQuery} TQuery - The type of the query parameters.
+ * @param {TBody} TBody - The type of the request body.
+ * @param {TResponse} TResponse - The type of the response.
  */
 export type RouteHandler<
   TParams extends Record<string, string> = Record<string, string>,
@@ -909,10 +963,13 @@ export type RouteHandler<
 ) => void | Response | Promise<void | Response>;
 
 /**
- * Extract path parameter names into a record type
- * e.g. "/users/:id/books/:bookId" -> { id: string; bookId: string }
- * @param TPath The type of the path
- * @returns @type {ExtractPathParams}
+ * Extracts path parameter names into a record type.
+ * @typedef {ExtractPathParams}
+ * @param {TPath} TPath - The type of the path.
+ * @example
+ * // Example usage:
+ * type Params = ExtractPathParams<'/users/:id/books/:bookId'>;
+ * // Result: { id: string; bookId: string }
  */
 export type ExtractPathParams<TPath extends string> = TPath extends `${infer _Start}:${infer Param}/${infer Rest}`
   ? { [K in Param]: string } & ExtractPathParams<`/${Rest}`>
@@ -921,27 +978,38 @@ export type ExtractPathParams<TPath extends string> = TPath extends `${infer _St
   : Record<string, never>; // prettier-ignore
 
 /**
- * Strongly-typed handler inferred from the literal path
- * Accepts either a standard Handler or a typed RouteHandler with inferred params
- * @param TPath The type of the path
- * @param TResponse The type of the response
- * @returns @type {PathHandler}
+ * Defines a handler inferred from the literal path, supporting both standard and typed handlers.
+ * @typedef {PathHandler}
+ * @param {TPath} TPath - The type of the path.
+ * @param {TResponse} TResponse - The type of the response.
  */
 export type PathHandler<TPath extends string, TResponse extends JsonValue = JsonValue> =
   | Handler<ExtractPathParams<TPath>, Record<string, string>, JsonValue, TResponse>
   | RouteHandler<ExtractPathParams<TPath>, Record<string, string>, JsonValue, TResponse>;
 
 /**
- * Options for creating a Router via factory.
- * Allows configuring a base prefix, pre-registered middlewares, and metadata.
+ * Options for creating a Router, allowing configuration of a base prefix, middlewares, and metadata.
+ * @interface RouterOptions
  */
 export interface RouterOptions {
-  /** Optional path prefix applied when the router is mounted without an explicit path */
+  /**
+   * An optional path prefix applied when the router is mounted without an explicit path.
+   * @type {string}
+   */
   prefix?: string;
-  /** Middlewares to register on the router upon creation */
+  /**
+   * Middlewares to register on the router upon creation.
+   * @type {Handler[]}
+   */
   middlewares?: Handler[];
-  /** Human-friendly name for tooling */
+  /**
+   * A human-friendly name for tooling purposes.
+   * @type {string}
+   */
   name?: string;
-  /** Description for docs/printing */
+  /**
+   * A description for documentation or printing purposes.
+   * @type {string}
+   */
   description?: string;
 }

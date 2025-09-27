@@ -1,6 +1,13 @@
 /* eslint-disable prettier/prettier */
 import type { Request, Response, NextFunction } from '../../types';
 
+/**
+ * @function requestLogger
+ * @description Logs information about the incoming request, including method, path, status, and duration.
+ * @param {Request} req - The incoming request object.
+ * @param {Response} res - The response object.
+ * @param {NextFunction} [next] - The next function in the middleware chain.
+ */
 export function requestLogger(req: Request, res: Response, next?: NextFunction) {
   const start = Date.now();
   const reset = '\x1b[0m';

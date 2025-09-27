@@ -1,14 +1,23 @@
 import type { Request, HttpMethod, JsonValue } from '../types';
 import type { IncomingMessage } from 'http';
 
-/** Enhances a Node IncomingMessage with Bearn conveniences.
- * @param req @type {IncomingMessage} - The incoming message to enhance.
- * @returns @type {Request} - The enhanced incoming message.
+/**
+ * Enhances a Node.js IncomingMessage with additional properties and methods for easier handling.
+ *
+ * @function
+ * @param {IncomingMessage} req - The incoming HTTP request message to enhance.
+ * @returns {Request} The enhanced request object with additional properties and methods.
  */
 export function enhanceRequest(req: IncomingMessage): Request {
   const BearnReq = req as Request;
 
-  // Header accessors - optimized
+  /**
+   * Retrieves a specific header from the request.
+   *
+   * @function
+   * @param {string} name - The name of the header to retrieve.
+   * @returns {string|string[]|undefined} The value of the header, or undefined if not found.
+   */
   function getHeader(this: Request, name: 'set-cookie'): string[] | undefined;
   function getHeader(this: Request, name: string): string | undefined;
   function getHeader(this: Request, name: string): string | string[] | undefined {
@@ -116,9 +125,14 @@ export function enhanceRequest(req: IncomingMessage): Request {
   return BearnReq;
 }
 
-/** Parses request body based on Content-Type with simple safeguards.
- * @param req @type {Request} - The request to parse the body of.
- * @returns @type {Promise<void>} - A promise that resolves when the body is parsed.
+/**
+ * Parses the body of a request based on its Content-Type header.
+ *
+ * @async
+ * @function
+ * @param {Request} req - The request object whose body needs to be parsed.
+ * @returns {Promise<void>} A promise that resolves when the body is successfully parsed.
+ * @throws Will throw an error if the request body is too large or if parsing fails.
  */
 export async function parseBody(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -173,6 +187,13 @@ export async function parseBody(req: Request): Promise<void> {
   });
 }
 
+/**
+ * Parses a URL-encoded string into an object.
+ *
+ * @function
+ * @param {string} body - The URL-encoded string to parse.
+ * @returns {Record<string, string>} An object representing the parsed key-value pairs.
+ */
 function parseUrlEncoded(body: string): Record<string, string> {
   const params: Record<string, string> = {};
   if (!body) return params;

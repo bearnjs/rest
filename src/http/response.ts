@@ -2,9 +2,10 @@ import { STATUS_CODES, type ServerResponse } from 'http';
 
 import type { Response, CookieOptions, JsonValue } from '../types';
 
-/** Enhances a Node ServerResponse with Bearn helpers.
- * @param res @type {ServerResponse} - The server response to enhance.
- * @returns @type {Response} - The enhanced server response.
+/**
+ * A map that associates file extensions with their corresponding MIME types.
+ * @constant
+ * @type {Map<string, string>}
  */
 const mimeMap = new Map([
   ['html', 'text/html'],
@@ -64,22 +65,43 @@ const mimeMap = new Map([
   ['glb', 'model/gltf-binary'],
 ]);
 
+/**
+ * Resolves the MIME type for a given file extension or MIME type string.
+ * @function
+ * @param {string} input - The file extension or MIME type string.
+ * @returns {string} - The resolved MIME type.
+ */
 function resolveMime(input: string): string {
   if (input.includes('/')) return input;
   const key = input.startsWith('.') ? input.slice(1) : input;
   return mimeMap.get(key.toLowerCase()) ?? 'application/octet-stream';
 }
 
+/**
+ * Enhances a Node.js ServerResponse object with additional helper methods.
+ * @function
+ * @param {ServerResponse} res - The server response to enhance.
+ * @returns {Response} - The enhanced server response.
+ */
 export function enhanceResponse(res: ServerResponse): Response {
   const BearnRes = res as Response;
 
+  /**
+   * Sends a JSON response.
+   * @param {JsonValue} data - The data to send as JSON.
+   * @returns {Response} - The response object.
+   */
   BearnRes.json = function (data: JsonValue): Response {
     if (!this.hasHeader('Content-Type')) this.setHeader('Content-Type', 'application/json');
-    // Use direct JSON.stringify for better performance
     this.end(JSON.stringify(data));
     return this;
   };
 
+  /**
+   * Sends a response with the given data.
+   * @param {string|Buffer} data - The data to send.
+   * @returns {Response} - The response object.
+   */
   BearnRes.send = function (data: string | Buffer): Response {
     if (typeof data === 'string' && !this.hasHeader('Content-Type')) {
       this.setHeader('Content-Type', 'text/html');
@@ -88,11 +110,21 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   };
 
+  /**
+   * Sets the HTTP status code for the response.
+   * @param {number} code - The status code to set.
+   * @returns {Response} - The response object.
+   */
   BearnRes.status = function (code: number): Response {
     this.statusCode = code;
     return this;
   };
 
+  /**
+   * Sends a response with the given status code and its corresponding message.
+   * @param {number} code - The status code to send.
+   * @returns {Response} - The response object.
+   */
   BearnRes.sendStatus = function (code: number): Response {
     this.statusCode = code;
     const message = STATUS_CODES[code] ?? String(code);
@@ -101,6 +133,11 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   };
 
+  /**
+   * Sets the Content-Type of the response.
+   * @param {string} type - The MIME type or file extension.
+   * @returns {Response} - The response object.
+   */
   const setType = function (this: Response, type: Parameters<Response['type']>[0]): Response {
     this.setHeader('Content-Type', resolveMime(String(type)));
     return this;
@@ -108,6 +145,12 @@ export function enhanceResponse(res: ServerResponse): Response {
   BearnRes.type = setType;
   BearnRes.contentType = setType as Response['contentType'];
 
+  /**
+   * Redirects the response to a specified URL.
+   * @param {string|number} a - The URL or status code.
+   * @param {string|number} [b] - The URL if the first parameter is a status code.
+   * @returns {Response} - The response object.
+   */
   BearnRes.redirect = function (this: Response, a: string | number, b?: string | number): Response {
     const isNumberFirst = typeof a === 'number';
     const status = isNumberFirst ? a : typeof b === 'number' ? b : 302;
@@ -118,6 +161,13 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   } as Response['redirect'];
 
+  /**
+   * Sets a cookie on the response.
+   * @param {string} name - The name of the cookie.
+   * @param {string} value - The value of the cookie.
+   * @param {CookieOptions} [options] - Additional cookie options.
+   * @returns {Response} - The response object.
+   */
   BearnRes.cookie = function (name: string, value: string, options?: CookieOptions): Response {
     const parts: string[] = [`${encodeURIComponent(name)}=${encodeURIComponent(value)}`];
     if (options?.httpOnly) parts.push('HttpOnly');
@@ -145,6 +195,12 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   };
 
+  /**
+   * Clears a cookie by setting its expiration date to the past.
+   * @param {string} name - The name of the cookie to clear.
+   * @param {CookieOptions} [_options] - Additional options (not used).
+   * @returns {Response} - The response object.
+   */
   BearnRes.clearCookie = function (name: string, _options?: CookieOptions): Response {
     const expires = new Date(1).toUTCString();
     const cookieString = `${encodeURIComponent(name)}=; Expires=${expires}; Max-Age=0`;
@@ -162,6 +218,13 @@ export function enhanceResponse(res: ServerResponse): Response {
   };
 
   // Header helpers: set/header/get/append/links/location/vary
+
+  /**
+   * Sets a header field to a specified value.
+   * @param {string|Object} field - The header field name or an object of key-value pairs.
+   * @param {string|number|string[]} [value] - The value to set for the header field.
+   * @returns {Response} - The response object.
+   */
   BearnRes.set = function (
     this: Response,
     field: Parameters<Response['set']>[0],
@@ -177,6 +240,12 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   } as Response['set'];
 
+  /**
+   * Alias for the set method to set a header field.
+   * @param {string|Object} field - The header field name or an object of key-value pairs.
+   * @param {string|number|string[]} [value] - The value to set for the header field.
+   * @returns {Response} - The response object.
+   */
   BearnRes.header = function (
     this: Response,
     field: Parameters<Response['header']>[0],
@@ -185,6 +254,11 @@ export function enhanceResponse(res: ServerResponse): Response {
     return BearnRes.set.call(this, field, value ?? '');
   } as Response['header'];
 
+  /**
+   * Retrieves the value of a specified header field.
+   * @param {string} field - The header field name.
+   * @returns {string|number|string[]|undefined} - The value of the header field.
+   */
   BearnRes.get = function (this: Response, field: string): string | number | string[] | undefined {
     const val = this.getHeader(field);
     if (Array.isArray(val)) return val as unknown as string[];
@@ -192,6 +266,12 @@ export function enhanceResponse(res: ServerResponse): Response {
     return typeof val === 'string' ? val : undefined;
   } as Response['get'];
 
+  /**
+   * Appends a value to a specified header field.
+   * @param {string} field - The header field name.
+   * @param {string|number|string[]} [value] - The value to append.
+   * @returns {Response} - The response object.
+   */
   BearnRes.append = function (this: Response, field: string, value?: string[] | string | number): Response {
     const current = this.getHeader(field);
     const normalizedNext = Array.isArray(value)
@@ -209,17 +289,32 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   };
 
+  /**
+   * Sets the Link header field with the given links.
+   * @param {Object} links - An object containing link relations and URLs.
+   * @returns {Response} - The response object.
+   */
   BearnRes.links = function (this: Response, links: Record<string, string>): Response {
     const segments = Object.entries(links).map(([rel, url]) => `<${url}>; rel="${rel}"`);
     this.setHeader('Link', segments.join(', '));
     return this;
   };
 
+  /**
+   * Sets the Location header field with the given URL.
+   * @param {string} url - The URL to set in the Location header.
+   * @returns {Response} - The response object.
+   */
   BearnRes.location = function (this: Response, url: string): Response {
     this.setHeader('Location', url);
     return this;
   };
 
+  /**
+   * Modifies the Vary header field to include the given field.
+   * @param {string} field - The field to add to the Vary header.
+   * @returns {Response} - The response object.
+   */
   BearnRes.vary = function (this: Response, field: string): Response {
     const current = this.getHeader('Vary');
     const existing = typeof current === 'string' ? current.split(',') : Array.isArray(current) ? current : [];
@@ -248,6 +343,11 @@ export function enhanceResponse(res: ServerResponse): Response {
     return this;
   };
 
+  /**
+   * Sends a JSONP response with the given data.
+   * @param {JsonValue} data - The data to send as JSONP.
+   * @returns {Response} - The response object.
+   */
   BearnRes.jsonp = function (this: Response, data: JsonValue): Response {
     const payload = JSON.stringify(data);
     const body = `callback(${payload});`;
