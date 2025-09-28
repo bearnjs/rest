@@ -85,7 +85,7 @@
     "build": "tsup",
     "build:watch": "tsup --watch",
     "build:tsc": "tsc",
-    "docs": "typedoc --config typedoc.config.js",
+    "docs": "typedoc",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
@@ -94,9 +94,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^12.0.2",
     "@types/node": "^24.4.0",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.43.0",
+    "documentation": "^14.0.0",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -107,10 +111,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",
+    "semantic-release": "^24.2.9",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0",
-    "documentation": "^14.0.0"
+    "typescript-eslint": "^8.43.0"
   },
   "dependencies": {
     "zod": "^4.1.11"
