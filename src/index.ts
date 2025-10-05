@@ -3,7 +3,6 @@ export * from './decorators';
 export { Router } from './routing/router';
 export { BearnApp as Bearn } from './core/app';
 export { BearnApp } from './core/app';
-export { createCorsMiddleware } from './core/middlewares/cors';
 export * from './validation/zod';
 
 import { BearnApp } from './core/app';
