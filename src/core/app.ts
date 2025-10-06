@@ -4,7 +4,7 @@ import { getRegisteredControllers } from '../decorators';
 import { HttpException } from '../exceptions';
 import { printStartupLog } from './logging';
 import { createCorsMiddleware } from './middlewares/cors';
-import { requestLogger } from './middlewares/requestLogeer';
+import { requestLogger } from './middlewares/logger';
 import { enhanceRequest, parseBody } from '../http/request';
 import { enhanceResponse } from '../http/response';
 import { Router } from '../routing/router';

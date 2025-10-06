@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import type { Request, HttpMethod, JsonValue } from '../types';
 import type { IncomingMessage } from 'http';
 
@@ -34,82 +35,104 @@ export function enhanceRequest(req: IncomingMessage): Request {
   BearnReq.get = getHeader;
   BearnReq.header = getHeader;
 
-  if (typeof req.url === 'string') {
-    BearnReq.originalUrl = req.url;
-    BearnReq.path = req.url.split('?')[0] ?? '';
+  // Optimize: avoid repeated property access and unnecessary checks
+  const {url} = req;
+  if (typeof url === 'string') {
+    BearnReq.originalUrl = url;
+    const qIdx = url.indexOf('?');
+    BearnReq.path = qIdx === -1 ? url : url.slice(0, qIdx);
   }
 
-  BearnReq.protocol = (req.socket as unknown as { encrypted?: boolean }).encrypted ? 'https' : 'http';
-  BearnReq.secure = BearnReq.protocol === 'https';
+  const socket = req.socket as { encrypted?: boolean; remoteAddress?: string };
+  BearnReq.protocol = socket.encrypted ? 'https' : 'http';
+  BearnReq.secure = !!socket.encrypted;
 
-  if (typeof req.socket.remoteAddress === 'string') {
-    BearnReq.ip = req.socket.remoteAddress;
+  if (typeof socket.remoteAddress === 'string') {
+    BearnReq.ip = socket.remoteAddress;
   }
+
+  // Optimize: flatten and trim forwarded-for in one go
   const forwardedFor = req.headers['x-forwarded-for'];
-  BearnReq.ips = Array.isArray(forwardedFor)
-    ? forwardedFor.flatMap(s => s.split(',').map(ip => ip.trim()))
-    : typeof forwardedFor === 'string'
-      ? forwardedFor.split(',').map(ip => ip.trim())
-      : [];
+  let ips: string[] = [];
+  if (Array.isArray(forwardedFor)) {
+    for (const s of forwardedFor) {
+      if (typeof s === 'string') {
+        ips.push(
+          ...s
+            .split(',')
+            .map(ip => ip.trim())
+            .filter(Boolean)
+        );
+      }
+    }
+  } else if (typeof forwardedFor === 'string') {
+    ips = forwardedFor
+      .split(',')
+      .map(ip => ip.trim())
+      .filter(Boolean);
+  }
+  BearnReq.ips = ips;
 
+  // Optimize: host/hostname/port extraction
   const rawHost = req.headers['host'];
-  const hostValues: string[] = Array.isArray(rawHost)
-    ? rawHost.filter((v): v is string => typeof v === 'string')
-    : typeof rawHost === 'string'
-      ? [rawHost]
-      : [];
-  if (hostValues.length > 0) {
-    const firstValue = hostValues[0] as string;
-    BearnReq.hostname = firstValue.split(':')[0] ?? '';
-    BearnReq.host = firstValue;
-    const portMatch = firstValue.match(/:(\d+)/) ?? [];
-    BearnReq.port = parseInt(portMatch[1] ?? '0', 10);
+  let host: string | undefined;
+  if (Array.isArray(rawHost)) {
+    host = rawHost.find((v): v is string => typeof v === 'string');
+  } else if (typeof rawHost === 'string') {
+    host = rawHost;
+  }
+  if (host) {
+    BearnReq.host = host;
+    const colonIdx = host.indexOf(':');
+    BearnReq.hostname = colonIdx === -1 ? host : host.slice(0, colonIdx);
+    BearnReq.port = colonIdx !== -1 ? parseInt(host.slice(colonIdx + 1), 10) : 0;
   }
 
-  BearnReq.xhr = (req.headers['x-requested-with'] ?? '').toString().toLowerCase() === 'xmlhttprequest';
+  // Optimize: direct header access and normalization
+  const xrw = req.headers['x-requested-with'];
+  BearnReq.xhr = typeof xrw === 'string' && xrw.toLowerCase() === 'xmlhttprequest';
   BearnReq.fresh = false; // TODO: Implement ETag/Last-Modified checking
   BearnReq.stale = true;
   BearnReq.method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
   BearnReq.subdomains = BearnReq.hostname ? BearnReq.hostname.split('.').slice(0, -2) : [];
 
-  const acceptsHeaderRaw = Array.isArray(req.headers.accept)
-    ? req.headers.accept.join(',')
-    : (req.headers.accept ?? '');
-  const acceptsList = acceptsHeaderRaw ? acceptsHeaderRaw.split(',').map(t => t.trim()) : [];
+  // Accepts
+  function parseAccept(header: string | string[] | undefined): string[] {
+    if (!header) return [];
+    if (Array.isArray(header)) header = header.join(',');
+    return header
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+  }
   BearnReq.accepts = function (): string[] {
-    return acceptsList;
+    return parseAccept(req.headers.accept);
   };
-
-  const acceptsCharsetRaw = Array.isArray(req.headers['accept-charset'])
-    ? req.headers['accept-charset'][0]
-    : req.headers['accept-charset'];
-  const acceptsCharsetList = acceptsCharsetRaw ? acceptsCharsetRaw.split(',').map(c => c.trim()) : [];
   BearnReq.acceptsCharsets = function (): string[] {
-    return acceptsCharsetList;
+    // Accept-Charset: join all values if array, else string
+    const ac = req.headers['accept-charset'];
+    let val: string | undefined;
+    if (Array.isArray(ac)) val = ac.join(',');
+    else val = ac;
+    return val
+      ? val
+          .split(',')
+          .map(c => c.trim())
+          .filter(Boolean)
+      : [];
   };
-
-  const acceptsEncodingRaw = Array.isArray(req.headers['accept-encoding'])
-    ? req.headers['accept-encoding'].join(',')
-    : (req.headers['accept-encoding'] ?? '');
-  const acceptsEncodingList = acceptsEncodingRaw ? acceptsEncodingRaw.split(',').map(e => e.trim()) : [];
   BearnReq.acceptsEncodings = function (): string[] {
-    return acceptsEncodingList;
+    return parseAccept(req.headers['accept-encoding']);
   };
-
-  const acceptsLanguageRaw = Array.isArray(req.headers['accept-language'])
-    ? req.headers['accept-language'].join(',')
-    : (req.headers['accept-language'] ?? '');
-  const acceptsLanguageList = acceptsLanguageRaw ? acceptsLanguageRaw.split(',').map(l => l.trim()) : [];
   BearnReq.acceptsLanguages = function (): string[] {
-    return acceptsLanguageList;
+    return parseAccept(req.headers['accept-language']);
   };
 
+  // Cookies
   const cookieHeaderRaw = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
   if (cookieHeaderRaw) {
-    const pairs = cookieHeaderRaw.split(';');
     const cookies: Record<string, string> = {};
-    for (let i = 0; i < pairs.length; i++) {
-      const part = pairs[i];
+    for (const part of cookieHeaderRaw.split(';')) {
       if (!part) continue;
       const idx = part.indexOf('=');
       if (idx === -1) continue;
@@ -135,9 +158,10 @@ export function enhanceRequest(req: IncomingMessage): Request {
  */
 export async function parseBody(req: Request): Promise<void> {
   return new Promise((resolve, reject) => {
+    const MAX_SIZE = 1024 * 1024;
     const contentLength = parseInt(req.headers['content-length'] ?? '0', 10);
 
-    if (contentLength > 1024 * 1024) {
+    if (contentLength > MAX_SIZE) {
       reject(new Error('Request entity too large'));
       return;
     }
@@ -147,13 +171,11 @@ export async function parseBody(req: Request): Promise<void> {
 
     req.on('data', (chunk: Buffer) => {
       totalLength += chunk.length;
-
-      if (totalLength > 1024 * 1024) {
+      if (totalLength > MAX_SIZE) {
         reject(new Error('Request entity too large'));
         req.destroy();
         return;
       }
-
       chunks.push(chunk);
     });
 
@@ -161,7 +183,6 @@ export async function parseBody(req: Request): Promise<void> {
       try {
         const body = Buffer.concat(chunks).toString();
         const contentType = req.headers['content-type'];
-
         const setBody = (val: unknown) => {
           Reflect.set(req as object, 'body', val);
         };
@@ -170,9 +191,8 @@ export async function parseBody(req: Request): Promise<void> {
           setBody(body ? (JSON.parse(body) as JsonValue) : {});
         } else if (contentType?.includes('application/x-www-form-urlencoded')) {
           setBody(parseUrlEncoded(body));
-        } else if (contentType?.includes('multipart/form-data')) {
-          setBody(body);
         } else {
+          // For multipart/form-data and others, just set as string
           setBody(body);
         }
         req.rawBody = body;
@@ -197,11 +217,8 @@ function parseUrlEncoded(body: string): Record<string, string> {
   const params: Record<string, string> = {};
   if (!body) return params;
 
-  const parts = body.split('&');
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
+  for (const part of body.split('&')) {
     if (!part) continue;
-
     const equalIndex = part.indexOf('=');
     if (equalIndex === -1) {
       params[decodeURIComponent(part)] = '';
