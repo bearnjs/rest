@@ -109,10 +109,10 @@ export function enhanceRequest(req: IncomingMessage): Request {
     return parseAccept(req.headers.accept);
   };
   BearnReq.acceptsCharsets = function (): string[] {
-    // Accept-Charset: only first value if array, else string
+    // Accept-Charset: join all values if array, else string
     const ac = req.headers['accept-charset'];
     let val: string | undefined;
-    if (Array.isArray(ac)) val = ac[0];
+    if (Array.isArray(ac)) val = ac.join(',');
     else val = ac;
     return val
       ? val
