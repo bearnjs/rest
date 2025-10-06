@@ -36,7 +36,7 @@ export function enhanceRequest(req: IncomingMessage): Request {
   BearnReq.header = getHeader;
 
   // Optimize: avoid repeated property access and unnecessary checks
-  const url = req.url;
+  const {url} = req;
   if (typeof url === 'string') {
     BearnReq.originalUrl = url;
     const qIdx = url.indexOf('?');
